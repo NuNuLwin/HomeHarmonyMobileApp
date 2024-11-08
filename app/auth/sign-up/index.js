@@ -10,6 +10,7 @@ import CreateParentsProfile from "../../../components/signup/CreateParentsProfil
 import CreateKidProfile from "../../../components/signup/CreateKidProfile";
 import FooterButtons from "../../../components/signup/FooterButtons";
 import Colors from "../../../constants/Colors";
+import BackButton from "../../../components/signup/BackButton";
 
 export default function SignUp() {
   const navigation = useNavigation();
@@ -71,32 +72,28 @@ export default function SignUp() {
     <SafeAreaView>
       <View style={styles.container}>
         {/* {step > 0 && <BackButton onPressed={handlePreviousButtonPressed} />} */}
-
+        {step === 0 && <BackButton />}
         {step === 0 && (
           <View>
             <Progressindicator size="0.25" />
-            <Text>Step 1</Text>
             <CreateAccount />
           </View>
         )}
         {step === 1 && (
           <View>
             <Progressindicator size="0.5" />
-            <Text>Step 2</Text>
             <CreateParentsProfile step="2" />
           </View>
         )}
         {step === 2 && (
           <View>
             <Progressindicator size="0.75" />
-            <Text>Step 3</Text>
             <CreateParentsProfile step="3" />
           </View>
         )}
         {step === 3 && (
           <View>
             <Progressindicator size="1.0" />
-            <Text>Step 4</Text>
             <CreateKidProfile />
           </View>
         )}

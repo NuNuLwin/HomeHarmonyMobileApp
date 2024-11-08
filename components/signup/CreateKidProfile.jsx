@@ -102,11 +102,9 @@ export default function CreateKidProfile() {
 
         router.replace("/chore");
       } catch (error) {
+        setLoading(false);
         const errorCode = error.code;
         const errorMessage = error.message;
-        // Alert.alert("Problem in your account set up!", errorMessage, [
-        //   { text: "OK" },
-        // ]);
 
         if (errorCode === "auth/email-already-in-use") {
           Alert.alert(
@@ -115,6 +113,16 @@ export default function CreateKidProfile() {
             [{ text: "OK" }]
           );
         }
+        if (errorCode === "auth/weak-password") {
+          Alert.alert(
+            "Password should be at least 6 characters",
+            "Invalid credentials",
+            [{ text: "OK" }]
+          );
+        }
+        // Alert.alert("Problem in your account set up!", errorMessage, [
+        //   { text: "OK" },
+        // ]);
         console.log(errorMessage, errorCode);
       }
     }
