@@ -9,10 +9,12 @@ import { SignUpContext } from "../../contexts/SignUpContext.jsx";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { useRouter } from "expo-router";
+import LoadingScreen from "./loading.jsx";
 
 export default function CreateKidProfile() {
   const [count, setCount] = useState(1);
   const { signUpData, setSignUpData } = useContext(SignUpContext);
+  const [loading, setLoading] = useState(false);
   const [kids, setKids] = useState([{ name: "", dob: "" }]);
   const router = useRouter();
 
@@ -81,6 +83,7 @@ export default function CreateKidProfile() {
     } else {
       try {
         // Create user with email and password
+        setLoading(true);
         const userCredential = await createUserWithEmailAndPassword(
           auth,
           signUpData.email,
@@ -95,8 +98,8 @@ export default function CreateKidProfile() {
           parents: signUpData.parents,
           kids: signUpData.kids,
         });
+        setLoading(false);
 
-        console.log("result...", result);
         router.replace("/chore");
       } catch (error) {
         const errorCode = error.code;
@@ -116,6 +119,10 @@ export default function CreateKidProfile() {
       }
     }
   };
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <View>

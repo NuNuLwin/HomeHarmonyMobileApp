@@ -9,6 +9,7 @@ import CreateAccount from "../../../components/signup/CreateAccount";
 import CreateParentsProfile from "../../../components/signup/CreateParentsProfile";
 import CreateKidProfile from "../../../components/signup/CreateKidProfile";
 import FooterButtons from "../../../components/signup/FooterButtons";
+import Colors from "../../../constants/Colors";
 
 export default function SignUp() {
   const navigation = useNavigation();
@@ -117,6 +118,7 @@ export default function SignUp() {
 }
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: Colors.WHITE,
     justifyContent: "space-between",
     padding: 30,
     gap: 20,
