@@ -1,5 +1,7 @@
 import { Stack } from "expo-router";
 import { useFonts } from "expo-font";
+import { useState } from "react";
+import { SignUpContext } from "../contexts/SignUpContext";
 
 export default function RootLayout() {
   useFonts({
@@ -9,11 +11,16 @@ export default function RootLayout() {
     "outfit-light": require("./../assets/fonts/Outfit-Light.ttf"),
     "akaya-regular": require("./../assets/fonts/AkayaKanadaka-Regular.ttf"),
   });
+
+  const [signUpData, setSignUpData] = useState({});
+
   return (
-    <Stack>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-      {/* <Stack.Screen name="signup/index" />
-      <Stack.Screen name="chores/dashboard" /> */}
-    </Stack>
+    <SignUpContext.Provider value={{ signUpData, setSignUpData }}>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" />
+        {/* <Stack.Screen name="index" options={{ headerShown: false }} /> */}
+        {/* Additional screens can be uncommented as needed */}
+      </Stack>
+    </SignUpContext.Provider>
   );
 }

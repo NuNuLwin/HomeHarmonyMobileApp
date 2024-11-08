@@ -1,15 +1,22 @@
 import { View, Text, StyleSheet } from "react-native";
 import React from "react";
 import { TouchableOpacity } from "react-native";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 
 export default function ButtonGroup() {
+  const router = useRouter();
   return (
     <View style={styles.introButtonGroup}>
-      <TouchableOpacity style={styles.introButton}>
+      <TouchableOpacity
+        style={styles.introButton}
+        onPress={() => router.push("auth/sign-in")}
+      >
         <Text style={styles.introButtonText}>Join Family</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.introButton}>
+      <TouchableOpacity
+        style={styles.introButton}
+        onPress={() => router.push("auth/sign-up")}
+      >
         <Text style={styles.introButtonText}>New Family</Text>
       </TouchableOpacity>
     </View>
@@ -34,6 +41,6 @@ const styles = StyleSheet.create({
   introButtonText: {
     color: "#fff",
     fontSize: 20,
-    fontFamily: "outfit",
+    fontFamily: "outfit-regular",
   },
 });

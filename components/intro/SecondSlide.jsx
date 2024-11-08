@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     height: 300,
   },
   desc: {
-    padding: 25,
+    padding: 40,
     fontFamily: "outfit-light",
     fontSize: 20,
     textAlign: "center",

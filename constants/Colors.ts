@@ -2,6 +2,7 @@ export default {
   // PRIMARY: "#E26868",
   PRIMARY: "#DE5454",
   GREY: "#8F8E8D",
+  LIGHT_GREY: "#D9D9D9",
   WHITE: "#FFFFFF",
   RED_PINK: "#DE5454",
 };

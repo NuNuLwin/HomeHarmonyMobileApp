@@ -1,14 +1,13 @@
-import { Link } from "expo-router";
+import { Redirect } from "expo-router";
 import { Platform, SafeAreaView, StatusBar, StyleSheet } from "react-native";
 import IntroScreen from "./intro/index";
+import { auth } from "./../config/FirebaseConfig";
 
 export default function Index() {
+  const user = auth.currentUser;
   return (
     <SafeAreaView style={styles.safeContainer}>
-      <IntroScreen />
-      {/* <Link href={"/signup"}>
-        <Text>Go to Login screen</Text>
-      </Link> */}
+      {user ? <Redirect href={"/chore"} /> : <IntroScreen />}
     </SafeAreaView>
   );
 }
