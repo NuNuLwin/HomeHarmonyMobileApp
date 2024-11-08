@@ -5,21 +5,53 @@ import {
   Image,
   StyleSheet,
   TextInput,
+  Alert,
 } from "react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigation, useRouter } from "expo-router";
 import Colors from "./../../../constants/Colors";
 import { TouchableOpacity } from "react-native";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "./../../../config/FirebaseConfig";
 
 export default function SignIn() {
   const navigation = useNavigation();
   const router = useRouter();
+
+  const [email, setEmail] = useState();
+  const [password, setPassword] = useState();
 
   useEffect(() => {
     navigation.setOptions({
       headerShown: false,
     });
   });
+
+  const handleSignIn = () => {
+    if (!email && !password) {
+      Alert.alert("Please Enter Email & Password");
+      return;
+    }
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        console.log(user);
+        router.replace("/chore");
+        // ...
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+
+        console.log(errorMessage, errorCode);
+        if (errorCode === "auth/invalid-email") {
+          Alert.alert("Problem in sign in!", "Invalid credentials", [
+            { text: "OK" },
+          ]);
+        }
+      });
+  };
   return (
     <SafeAreaView>
       <View style={styles.container}>
@@ -35,7 +67,11 @@ export default function SignIn() {
         {/* Email */}
         <View style={styles.input_wrapper}>
           <Text style={styles.input_text}>Email</Text>
-          <TextInput style={styles.input} placeholder="Enter Email"></TextInput>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter Email"
+            onChangeText={(val) => setEmail(val)}
+          ></TextInput>
         </View>
 
         {/* Password */}
@@ -45,13 +81,14 @@ export default function SignIn() {
             secureTextEntry={true}
             style={styles.input}
             placeholder="Enter Password"
+            onChangeText={(val) => setPassword(val)}
           ></TextInput>
         </View>
 
         {/* Sign in button */}
-        <View style={styles.signin_button}>
+        <TouchableOpacity style={styles.signin_button} onPress={handleSignIn}>
           <Text style={styles.signin_text}>Sign In</Text>
-        </View>
+        </TouchableOpacity>
 
         <View style={styles.signup_wrapper}>
           <Text>Don’t have account for your family?</Text>

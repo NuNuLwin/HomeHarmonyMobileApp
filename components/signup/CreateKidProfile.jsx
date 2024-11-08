@@ -18,8 +18,13 @@ export default function CreateKidProfile() {
 
   // Update value to context
   useEffect(() => {
-    console.log(signUpData);
-    setKids(signUpData.kids);
+    // Ensure there is at least one kid entry on page load
+    if (!signUpData.kids || signUpData.kids.length === 0) {
+      setKids([{ name: "", dob: "" }]);
+    } else {
+      setKids(signUpData.kids);
+      setCount(signUpData.kids.length);
+    }
   }, []);
 
   useEffect(() => {
@@ -38,7 +43,7 @@ export default function CreateKidProfile() {
   // Add kid profile
   const handleIncreCount = () => {
     setKids([...kids, { name: "", dob: "" }]);
-    // setCount(signUpData.kids.length + 1);
+    setCount(signUpData.kids.length + 1);
     setSignUpData((prevData) => ({
       ...prevData,
       kids: kids,
@@ -49,7 +54,7 @@ export default function CreateKidProfile() {
   const handleDescCount = () => {
     if (signUpData.kids.length > 1) {
       setKids(kids.slice(0, -1));
-      // setCount(signUpData.kids.length - 1);
+      setCount(signUpData.kids.length - 1);
     }
     setSignUpData((prevData) => ({
       ...prevData,
@@ -85,21 +90,28 @@ export default function CreateKidProfile() {
         console.log(user);
 
         // Set the document in Firestore
-        const result = await setDoc(doc(db, "Families", signUpData.email), {
+        await setDoc(doc(db, "Families", signUpData.email), {
           email: user.email,
           parents: signUpData.parents,
           kids: signUpData.kids,
         });
 
-        if (result) {
-          router.replace("/chore");
-        }
+        console.log("result...", result);
+        router.replace("/chore");
       } catch (error) {
         const errorCode = error.code;
         const errorMessage = error.message;
-        Alert.alert("Problem in your account set up!", errorMessage, [
-          { text: "OK" },
-        ]);
+        // Alert.alert("Problem in your account set up!", errorMessage, [
+        //   { text: "OK" },
+        // ]);
+
+        if (errorCode === "auth/email-already-in-use") {
+          Alert.alert(
+            "Your Family account is already exist",
+            "Invalid credentials",
+            [{ text: "OK" }]
+          );
+        }
         console.log(errorMessage, errorCode);
       }
     }
@@ -115,7 +127,7 @@ export default function CreateKidProfile() {
         <TouchableOpacity onPress={handleDescCount} style={styles.count_icon}>
           <Feather name="minus-circle" size={30} color="black" />
         </TouchableOpacity>
-        <Text style={styles.text}>{signUpData.kids.length}</Text>
+        <Text style={styles.text}>{count}</Text>
         <TouchableOpacity onPress={handleIncreCount} style={styles.count_icon}>
           <Feather name="plus-circle" size={30} color="black" />
         </TouchableOpacity>
