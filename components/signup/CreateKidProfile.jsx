@@ -1,15 +1,31 @@
-import { View, Text, StyleSheet, TextInput, Alert } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
+import { View, Text, StyleSheet, TextInput, Alert, Image } from "react-native";
 import { TouchableOpacity } from "react-native";
+
+// expo
 import Feather from "@expo/vector-icons/Feather";
+import { useRouter } from "expo-router";
+
+// constants
 import Colors from "../../constants/Colors";
+import Folders from "@/constants/Folders";
+
+// components
 import DateInput from "./DateInput";
-import { auth, db } from "./../../config/FirebaseConfig";
-import { SignUpContext } from "../../contexts/SignUpContext.jsx";
+import LoadingScreen from "./loading.jsx";
+import { Uploading } from "../common/Uploading.jsx"
+
+// firebase
+import { auth, db, storage } from "./../../config/FirebaseConfig";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
-import { useRouter } from "expo-router";
-import LoadingScreen from "./loading.jsx";
+
+// Image
+import * as ImagePicker from "expo-image-picker";
+
+// context
+import { SignUpContext } from "../../contexts/SignUpContext.jsx";
 
 export default function CreateKidProfile() {
   const [count, setCount] = useState(1);
@@ -17,6 +33,10 @@ export default function CreateKidProfile() {
   const [loading, setLoading] = useState(false);
   const [kids, setKids] = useState([{ name: "", dob: "" }]);
   const router = useRouter();
+  const [progress, setProgress] = useState(0);
+  const [showModal, setShowModal] = useState(false);
+  const [image, setImage] = useState();
+  const PROFILE_FOLDER = Folders.PROFILE_FOLDER;
 
   // Update value to context
   useEffect(() => {
@@ -35,6 +55,62 @@ export default function CreateKidProfile() {
       kids: kids,
     }));
   }, [kids, setSignUpData]);
+
+  // Events
+  // Profile Image Upload
+  const pickImage = async (index) => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [3, 4],
+      quality: 0.2,
+    });
+
+    if (!result.canceled) {
+      console.log('img:', result.assets[0].uri)
+      setImage(result.assets[0].uri);
+      setShowModal(true);
+      const url = await uploadImage(result.assets[0].uri, "image");
+      const updatedKids = [...kids];
+      updatedKids[index].image = url;
+      setKids(updatedKids);
+      setShowModal(false);
+    }
+  }
+
+  async function doUploadImage(uri, uploadProgress) {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    const storageRef = ref(storage, `${PROFILE_FOLDER}/` + new Date().getTime());
+    const task = uploadBytesResumable(storageRef, blob);
+
+    task.on(
+      "state_changed",
+      (snapshot) => {
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        if (uploadProgress) {
+          setProgress(parseInt(progress.toFixed()));
+        }
+      },
+      (error) => {
+        // handle error
+        console.log('File upload error:', error);
+      }
+    )
+    await task;
+    return await getDownloadURL(task.snapshot.ref)
+  }
+
+  const uploadImage = async (uri) => {
+    let file_url = await doUploadImage(uri, true);
+    
+    // clean up
+    setProgress(0);
+    setImage(null);
+
+    return file_url
+  }
 
   const confirmDate = (index, _date) => {
     const updatedKids = [...kids];
@@ -67,12 +143,14 @@ export default function CreateKidProfile() {
   // Sign up
   const handleSignUp = async () => {
     console.log("========handleSignUp===========");
+    console.log(signUpData);
+
     let flag = true;
     const kids = signUpData?.kids;
 
     // Check each kid name and dob is empty
     for (const kid of kids) {
-      if (!kid.name || !kid.dob) {
+      if (!kid.name || !kid.dob || !kid.image) {
         flag = false;
         break;
       }
@@ -138,6 +216,8 @@ export default function CreateKidProfile() {
         How many kids do you have in your family?
       </Text>
 
+      {showModal === true && <Uploading image={image} progress={progress} />}
+
       <View style={styles.count_wrapper}>
         <TouchableOpacity onPress={handleDescCount} style={styles.count_icon}>
           <Feather name="minus-circle" size={30} color="black" />
@@ -150,14 +230,24 @@ export default function CreateKidProfile() {
 
       {kids.map((kid, index) => (
         <View key={index} style={styles.box}>
-          <View style={styles.img_wrapper}></View>
+          <TouchableOpacity 
+            style={styles.img_wrapper}
+            onPress={() => pickImage(index)}
+          >
+            {kid.image && <Image
+              source={{
+                uri: kid.image
+              }}
+              style={styles.profile_img}
+            />}
+          </TouchableOpacity>
           <View style={{ flex: 1 }}>
             <TextInput
               style={styles.input}
               placeholder="Enter Name"
               onChangeText={(val) => {
                 const updatedKids = [...kids];
-                updatedKids[index].name = val;
+                updatedKids[index].name = val.trim();
                 setKids(updatedKids);
               }}
               value={kid.name}
@@ -207,10 +297,13 @@ const styles = StyleSheet.create({
     marginTop: 20,
     alignItems: "center",
   },
+  profile_img: {
+    flex: 1,
+    borderRadius: 50,
+  },
   img_wrapper: {
     width: 80,
     height: 80,
-    padding: 10,
     marginRight: 10,
     borderRadius: 50,
     borderWidth: 1,
