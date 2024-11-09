@@ -1,10 +1,15 @@
-import { View, Text } from "react-native";
-import React from "react";
+import { View, Text, SafeAreaView } from "react-native";
+import React, { useContext, useEffect } from "react";
+import { UserContext } from "../../contexts/UserContext";
 
 export default function chore() {
+  const { userData, setUserData } = useContext(UserContext);
+  useEffect(() => {
+    console.log("From Chorre..", userData);
+  }, []);
   return (
-    <View>
+    <SafeAreaView>
       <Text>chore</Text>
-    </View>
+    </SafeAreaView>
   );
 }

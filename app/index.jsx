@@ -37,7 +37,7 @@ export default function Index() {
 
   return (
     <SafeAreaView style={styles.safeContainer}>
-      {user ? <Redirect href={"/chore"} /> : <IntroScreen />}
+      {user ? <Redirect href={"/family/userlist"} /> : <IntroScreen />}
     </SafeAreaView>
   );
 }

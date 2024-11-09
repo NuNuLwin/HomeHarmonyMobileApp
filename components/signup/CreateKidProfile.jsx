@@ -100,7 +100,7 @@ export default function CreateKidProfile() {
         });
         setLoading(false);
 
-        router.replace("/chore");
+        router.replace("/family/userlist");
       } catch (error) {
         setLoading(false);
         const errorCode = error.code;

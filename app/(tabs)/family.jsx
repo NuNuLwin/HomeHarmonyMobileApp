@@ -1,26 +1,41 @@
-import { View, Text, Image, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  SafeAreaView,
+  ImageBackground,
+} from "react-native";
 import React from "react";
 import Colors from "../../constants/Colors";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { auth } from "./../../config/FirebaseConfig";
 import { TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
+
+//components
+import Members from "./../../components/family/members";
 
 export default function family() {
-  console.log(auth.currentUser);
+  const router = useRouter();
+
   return (
     <View>
-      <Image
+      <ImageBackground
         style={styles.img}
         source={require("./../../assets/images/family.jpg")}
-      />
-      <View></View>
-      <TouchableOpacity style={styles.profileCircle}>
-        <Ionicons name="person" size={24} color="black" />
-      </TouchableOpacity>
+      >
+        <TouchableOpacity
+          style={styles.profileCircle}
+          onPress={() => router.push({ pathname: "/family/profile" })}
+        >
+          <Ionicons name="person" size={24} color="black" />
+        </TouchableOpacity>
+      </ImageBackground>
+
+      <Members />
+
       {/* <Text>Welcome to {username}</Text> */}
-      <View style={styles.member_box}>
-        <Text style={styles.text}>Members</Text>
-      </View>
     </View>
   );
 }
@@ -29,19 +44,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 450,
   },
-  member_box: {
-    backgroundColor: Colors.WHITE,
-    marginTop: -30,
-    height: "100%",
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    padding: 20,
-  },
-  text: {
-    fontSize: 26,
-    fontFamily: "outfit-bold",
-    textAlign: "center",
-  },
+
   profileCircle: {
     borderWidth: 1,
     borderRadius: 40,
