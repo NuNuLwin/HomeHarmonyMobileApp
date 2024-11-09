@@ -38,6 +38,8 @@ export default function Index() {
   return (
     <SafeAreaView style={styles.safeContainer}>
       {user ? <Redirect href={"/chore"} /> : <IntroScreen />}
+
+      <StatusBar backgroundColor={Colors.WHITE} />
     </SafeAreaView>
   );
 }

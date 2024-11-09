@@ -46,8 +46,10 @@ export default function SignUp() {
       const _name = _parentProfile?.name;
       const _dob = _parentProfile?.dob;
       const _gen = _parentProfile?.gender;
+      const _image = _parentProfile?.image;
+      console.log('_parentProfile:', _parentProfile)
 
-      if (!_name || !_dob || !_gen) {
+      if (!_name || !_dob || !_gen || _image) {
         flag = false;
       }
     }

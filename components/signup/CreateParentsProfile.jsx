@@ -1,21 +1,41 @@
 import {
-  View,
+  Image,
+  StyleSheet,
   Text,
   TextInput,
-  StyleSheet,
   TouchableOpacity,
+  View
 } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
-
-import Colors from "../../constants/Colors";
-import DateInput from "./DateInput";
+import React, { useContext, useEffect, useState, useRef } from "react";
 
 import { SignUpContext } from "../../contexts/SignUpContext.jsx";
+
+// firebase
+import { addDoc, collection, onSnapshot } from "firebase/firestore";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { db, storage } from "../../config/FirebaseConfig.js"
+
+// Image
+import * as ImagePicker from "expo-image-picker";
+
+// components
+import DateInput from "./DateInput";
+import { Uploading } from "../common/Uploading.jsx"
+
+// constants
+import Colors from "../../constants/Colors";
+import Folders from "@/constants/Folders";
 
 export default function CreateParentsProfile(props) {
   const [name, setName] = useState();
   const [dob, setDob] = useState();
   const [gender, setGender] = useState();
+  const [image, setImage] = useState();
+  const [progress, setProgress] = useState(0);
+  const [showModal, setShowModal] = useState(false);
+
+  const PROFILE_FOLDER = Folders.PROFILE_FOLDER;
+
   const { signUpData, setSignUpData } = useContext(SignUpContext);
 
   console.log(`=== step ${props.step} ===`);
@@ -32,6 +52,7 @@ export default function CreateParentsProfile(props) {
       setName(parentData.name);
       setDob(parentData.dob);
       setGender(parentData.gender);
+      setImage(parentData.image);
     } else if (
       props.step === "3" &&
       signUpData.parents &&
@@ -41,6 +62,7 @@ export default function CreateParentsProfile(props) {
       setName(parentData.name);
       setDob(parentData.dob);
       setGender(parentData.gender);
+      setImage(parentData.image);
     }
   }, []);
 
@@ -48,7 +70,7 @@ export default function CreateParentsProfile(props) {
   useEffect(() => {
     setSignUpData((prevData) => {
       const updatedParents = [...(prevData.parents || [])];
-      const currentParent = { name, dob, gender };
+      const currentParent = { name, dob, gender, image };
 
       if (props.step === "2") {
         updatedParents[0] = currentParent; // First profile
@@ -61,12 +83,65 @@ export default function CreateParentsProfile(props) {
         parents: updatedParents,
       };
     });
-  }, [name, dob, gender, props.step, setSignUpData]);
+  }, [name, dob, gender, image, props.step, setSignUpData]);
 
+  // Events
   const confirmDate = (_date) => {
     console.log("=== confirmDate ===", _date.toDateString());
     setDob(_date.toDateString());
   };
+
+  // Profile Image Upload
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [3, 4],
+      quality: 0.2,
+    });
+
+    if (!result.canceled) {
+      console.log('img:', result.assets[0].uri)
+      setImage(result.assets[0].uri);
+      setShowModal(true);
+      const url = await uploadImage(result.assets[0].uri, "image");
+      setImage(url);
+      setShowModal(false);
+    }
+  }
+
+  async function doUploadImage(uri, uploadProgress) {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    const storageRef = ref(storage, `${PROFILE_FOLDER}/` + new Date().getTime());
+    const task = uploadBytesResumable(storageRef, blob);
+
+    task.on(
+      "state_changed",
+      (snapshot) => {
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        if (uploadProgress) {
+          setProgress(parseInt(progress.toFixed()));
+        }
+      },
+      (error) => {
+        // handle error
+        console.log('File upload error:', error);
+      }
+    )
+    await task;
+    return await getDownloadURL(task.snapshot.ref)
+  }
+
+  const uploadImage = async (uri) => {
+    let file_url = await doUploadImage(uri, true);
+    
+    // clean up
+    setProgress(0);
+
+    return file_url
+  }
 
   return (
     <View>
@@ -78,7 +153,19 @@ export default function CreateParentsProfile(props) {
       )}
 
       {/* Image */}
-      <View style={styles.img_wrapper}></View>
+      <TouchableOpacity
+        style={styles.img_wrapper}
+        onPress={pickImage}
+      >
+        {image && <Image
+          source={{
+            uri: image
+          }}
+          style={styles.profile_img}
+        />}
+      </TouchableOpacity>
+
+      {showModal === true && <Uploading image={image} progress={progress} />}
 
       {/* Name */}
       <View style={styles.input_wrapper}>
@@ -189,12 +276,15 @@ const styles = StyleSheet.create({
   img_wrapper: {
     width: 80,
     height: 80,
-    padding: 10,
     borderRadius: 50,
     borderWidth: 1,
     borderColor: Colors.GREY,
     backgroundColor: Colors.LIGHT_GREY,
     alignSelf: "center",
+  },
+  profile_img: {
+    flex: 1,
+    borderRadius: 50,
   },
   input_wrapper: {
     marginTop: 20,
