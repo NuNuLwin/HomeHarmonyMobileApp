@@ -1,11 +1,16 @@
-import { View, Text } from "react-native";
-import React from "react";
+import { View, Text, SafeAreaView } from "react-native";
+import React, { useContext, useEffect } from "react";
+import { UserContext } from "../../contexts/UserContext";
 import { TouchableOpacity } from "react-native";
 import { auth } from "../../config/FirebaseConfig";
 import { signOut } from "firebase/auth";
 import { useRouter } from "expo-router";
 
 export default function chore() {
+  const { userData, setUserData } = useContext(UserContext);
+  useEffect(() => {
+    console.log("From Chorre..", userData);
+  }, []);
   const router = useRouter();
 
   const signOutUser = () => {
@@ -20,7 +25,7 @@ export default function chore() {
 }
 
   return (
-    <View>
+    <SafeAreaView>
       <Text>chore</Text>
       <TouchableOpacity
         style={{
@@ -32,6 +37,6 @@ export default function chore() {
           style={{ color: "blue" }}
         >Logout</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }

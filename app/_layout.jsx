@@ -2,6 +2,7 @@ import { Stack } from "expo-router";
 import { useFonts } from "expo-font";
 import { useState } from "react";
 import { SignUpContext } from "../contexts/SignUpContext";
+import { UserContext } from "../contexts/UserContext";
 
 export default function RootLayout() {
   useFonts({
@@ -13,14 +14,15 @@ export default function RootLayout() {
   });
 
   const [signUpData, setSignUpData] = useState({});
+  const [userData, setUserData] = useState({});
 
   return (
     <SignUpContext.Provider value={{ signUpData, setSignUpData }}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        {/* <Stack.Screen name="index" options={{ headerShown: false }} /> */}
-        {/* Additional screens can be uncommented as needed */}
-      </Stack>
+      <UserContext.Provider value={{ userData, setUserData }}>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" />
+        </Stack>
+      </UserContext.Provider>
     </SignUpContext.Provider>
   );
 }

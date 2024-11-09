@@ -13,6 +13,7 @@ import Colors from "./../../../constants/Colors";
 import { TouchableOpacity } from "react-native";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "./../../../config/FirebaseConfig";
+import HeaderLogo from "./../../../components/common/headerLogo";
 
 export default function SignIn() {
   const navigation = useNavigation();
@@ -38,7 +39,7 @@ export default function SignIn() {
         // Signed in
         const user = userCredential.user;
         console.log(user);
-        router.replace("/chore");
+        router.replace("/family/userlist");
         // ...
       })
       .catch((error) => {
@@ -56,14 +57,17 @@ export default function SignIn() {
   return (
     <SafeAreaView>
       <View style={styles.container}>
-        <View style={styles.logo_wrapper}>
+        <HeaderLogo />
+        {/* <View style={styles.logo_wrapper}>
           <Image
             style={styles.logo}
             source={require("./../../../assets/images/HomeHarmonyLogo.png")}
           />
           <Text style={styles.logo_title}>HomeHarmony</Text>
-          <Text style={styles.signin_title}>Sign in</Text>
-        </View>
+          
+        </View> */}
+
+        <Text style={styles.signin_title}>Sign in</Text>
 
         {/* Email */}
         <View style={styles.input_wrapper}>
