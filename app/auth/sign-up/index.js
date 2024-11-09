@@ -14,18 +14,13 @@ import BackButton from "../../../components/signup/BackButton";
 
 export default function SignUp() {
   const navigation = useNavigation();
-  const router = useRouter();
-
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
-
   const [step, setStep] = useState(0);
-
   const { signUpData, setSignUpData } = useContext(SignUpContext);
 
   useEffect(() => {
     navigation.setOptions({
       headerShown: false,
+      backgroundColor: Colors.WHITE,
     });
   });
 
@@ -48,7 +43,7 @@ export default function SignUp() {
       const _dob = _parentProfile?.dob;
       const _gen = _parentProfile?.gender;
       const _image = _parentProfile?.image;
-      console.log('_parentProfile:', _parentProfile)
+      console.log("_parentProfile:", _parentProfile);
 
       if (!_name || !_dob || !_gen || !_image) {
         flag = false;
@@ -71,7 +66,7 @@ export default function SignUp() {
   };
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{ backgroundColor: Colors.WHITE }}>
       <View style={styles.container}>
         {/* {step > 0 && <BackButton onPressed={handlePreviousButtonPressed} />} */}
         {step === 0 && <BackButton />}
@@ -118,9 +113,10 @@ export default function SignUp() {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.WHITE,
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
     padding: 30,
     gap: 20,
+    height: "100%",
   },
   btn_container: {
     justifyContent: "space-between",

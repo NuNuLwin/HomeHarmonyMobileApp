@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Button,
   TextInput,
+  Image,
 } from "react-native";
 import React, { useContext, useEffect } from "react";
 import { useNavigation, useRouter } from "expo-router";
@@ -44,7 +45,15 @@ export default function Profile() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableOpacity style={styles.img_wrapper}></TouchableOpacity>
+      <View style={styles.img_wrapper}>
+        <Image
+          source={{ uri: userData.selectedProfile.image }}
+          style={styles.profile_img}
+          onError={(error) =>
+            console.log("Image load error:", error.nativeEvent.error)
+          }
+        />
+      </View>
 
       <Text style={styles.headerText}>{userData.selectedProfile.name}</Text>
 
@@ -128,5 +137,9 @@ const styles = StyleSheet.create({
     padding: 15,
     backgroundColor: Colors.LIGHT_GREY,
     borderRadius: 30,
+  },
+  profile_img: {
+    flex: 1,
+    borderRadius: 50,
   },
 });
