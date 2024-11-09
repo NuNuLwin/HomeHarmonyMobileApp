@@ -50,7 +50,7 @@ export default function SignUp() {
       const _image = _parentProfile?.image;
       console.log('_parentProfile:', _parentProfile)
 
-      if (!_name || !_dob || !_gen || _image) {
+      if (!_name || !_dob || !_gen || !_image) {
         flag = false;
       }
     }
