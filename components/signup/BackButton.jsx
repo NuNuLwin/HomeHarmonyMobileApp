@@ -9,9 +9,9 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 export default function BackButton(props) {
   const router = useRouter();
   return (
-    <View style={styles.btn}>
-      <TouchableOpacity onPress={props.onPressed}>
-        <Ionicons name="arrow-back" size={30} color="black" />
+    <View>
+      <TouchableOpacity onPress={() => router.back()}>
+        <Ionicons name="arrow-back" size={24} color="black" />
       </TouchableOpacity>
     </View>
   );

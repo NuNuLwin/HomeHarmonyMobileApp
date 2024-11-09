@@ -7,10 +7,6 @@ export default function loading() {
     <View style={styles.container}>
       {/* <Text style={styles.title}>Please Wait...</Text> */}
       <Text style={styles.text}>Your family account is creating</Text>
-      {/* <Image
-        style={styles.img}
-        source={require("./../../assets/images/loading.gif")}
-      /> */}
       <ActivityIndicator size={"large"} color={Colors.PRIMARY} />
       <Text style={styles.text1}>Don't Go Back</Text>
     </View>
@@ -34,10 +30,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 20,
   },
-  img: {
-    width: 50,
-    height: 50,
-  },
+
   text1: {
     fontSize: 20,
     color: Colors.GREY,
