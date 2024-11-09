@@ -9,11 +9,13 @@ import FamilyMember from "../../components/family/FamilyMember";
 
 export default function Userlist() {
   const { userData, setUserData } = useContext(UserContext);
-  const [family, setFamily] = useState({});
   const router = useRouter();
 
   const selectProfile = (profile) => {
-    setUserData(profile);
+    setUserData((prevData) => ({
+      ...prevData,
+      currentUser: profile.name,
+    }));
     router.replace("/chore");
   };
 
@@ -32,7 +34,7 @@ export default function Userlist() {
     const querySnapshot = await getDocs(q);
 
     querySnapshot.forEach((doc) => {
-      setFamily(doc.data());
+      setUserData(doc.data());
     });
   };
   return (
@@ -40,10 +42,10 @@ export default function Userlist() {
       <HeaderLogo />
       <Text style={styles.title}>Who are you?</Text>
       <View style={styles.body_wrapper}>
-        {family?.parents?.map((parent, index) => (
+        {userData?.parents?.map((parent, index) => (
           <FamilyMember key={index} member={parent} onSelect={selectProfile} />
         ))}
-        {family?.kids?.map((kid, index) => (
+        {userData?.kids?.map((kid, index) => (
           <FamilyMember key={index} member={kid} onSelect={selectProfile} />
         ))}
       </View>

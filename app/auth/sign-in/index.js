@@ -48,7 +48,16 @@ export default function SignIn() {
 
         console.log(errorMessage, errorCode);
         if (errorCode === "auth/invalid-email") {
-          Alert.alert("Problem in sign in!", "Invalid credentials", [
+          Alert.alert("Problem in sign in!", "Invalid email", [{ text: "OK" }]);
+        }
+        if (errorCode === "auth/missing-password") {
+          Alert.alert("Problem in sign in!", "Missing password", [
+            { text: "OK" },
+          ]);
+        }
+
+        if (errorCode === "auth/invalid-credential") {
+          Alert.alert("Problem in sign in!", "Invalid Credential", [
             { text: "OK" },
           ]);
         }
@@ -58,14 +67,6 @@ export default function SignIn() {
     <SafeAreaView>
       <View style={styles.container}>
         <HeaderLogo />
-        {/* <View style={styles.logo_wrapper}>
-          <Image
-            style={styles.logo}
-            source={require("./../../../assets/images/HomeHarmonyLogo.png")}
-          />
-          <Text style={styles.logo_title}>HomeHarmony</Text>
-          
-        </View> */}
 
         <Text style={styles.signin_title}>Sign in</Text>
 
@@ -110,7 +111,7 @@ export default function SignIn() {
 }
 const styles = StyleSheet.create({
   container: {
-    justifyContent: "space-between",
+    justifyContent: "center",
     padding: 40,
   },
   logo_wrapper: {
@@ -131,6 +132,7 @@ const styles = StyleSheet.create({
     color: Colors.PRIMARY,
   },
   signin_title: {
+    textAlign: "center",
     fontSize: 30,
     fontFamily: "outfit-regular",
   },

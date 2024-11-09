@@ -15,27 +15,25 @@ export default function chore() {
 
   const signOutUser = () => {
     signOut(auth)
-        .then((res) => {
-            console.log(res);
-            router.replace("/");
-        })
-        .catch((err) => {
-            console.log(err);
-        })
-}
+      .then((res) => {
+        console.log(res);
+        router.replace("/");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   return (
     <SafeAreaView>
       <Text>chore</Text>
       <TouchableOpacity
         style={{
-          padding: 10
+          padding: 10,
         }}
         onPress={signOutUser}
       >
-        <Text
-          style={{ color: "blue" }}
-        >Logout</Text>
+        <Text style={{ color: "blue" }}>Logout</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
