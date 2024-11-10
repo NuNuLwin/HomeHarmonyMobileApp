@@ -1,4 +1,11 @@
-import { View, Text, StyleSheet, Image, FlatList } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  FlatList,
+  Dimensions,
+} from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 
 import {
@@ -15,7 +22,10 @@ import Colors from "../../constants/Colors";
 
 import RewardItem from "./RewardItem";
 
-export default function Rewards() {
+const { height } = Dimensions.get("window");
+
+export default function Rewards({ selectedKid }) {
+  console.log("=== Rewards - selectedKid ===", selectedKid);
   const [rewards, setRewards] = useState([]);
   const { userData, setUserData } = useContext(UserContext);
   const [loader, setLoader] = useState(false);
@@ -31,7 +41,7 @@ export default function Rewards() {
 
     const _query = query(
       collection(db, "Rewards"),
-      where("email", "==", userData.email),
+      where("family", "==", userData.email),
       where("status", "==", "Available")
     );
 
@@ -57,7 +67,7 @@ export default function Rewards() {
     try {
       const q = query(
         collection(db, "Rewards"),
-        where("email", "==", userData.email),
+        where("family", "==", userData.email),
         where("status", "==", "Available")
       );
       const querySnapshot = await getDocs(q);
@@ -71,16 +81,18 @@ export default function Rewards() {
     }
   };
   return (
-    <View>
-      <Text style={styles.title}>All Rewards</Text>
+    <View style={{ height: height - 350 }}>
+      <Text style={styles.title}>Rewards for </Text>
 
-      {rewards.length > 0 ? (
-        <View style={{ height: "80%" }}>
+      {selectedKid && rewards.length > 0 ? (
+        <View style={{ marginTop: 10 }}>
           <FlatList
             data={rewards.sort((a, b) => a.point - b.point)}
             refreshing={loader}
             onRefresh={() => GetAllRewards()}
-            renderItem={({ item, index }) => <RewardItem reward={item} />}
+            renderItem={({ item, index }) => (
+              <RewardItem reward={item} selectedKid={selectedKid} />
+            )}
           />
         </View>
       ) : (
@@ -92,45 +104,6 @@ export default function Rewards() {
           <Text style={styles.text}>No rewards available.</Text>
         </View>
       )}
-
-      {/* {rewards && rewards.length > 0 ? (
-        rewards.map((reward, index) => (
-          <View key={index} style={styles.card}>
-            <View style={styles.bar}></View>
-            <View
-              style={{
-                padding: 10,
-                flexDirection: "row",
-                gap: 10,
-                paddingLeft: 0,
-              }}
-            >
-              <Image
-                style={styles.img}
-                source={require("./../../assets/images/cup.png")}
-              />
-              <View style={{ gap: 5 }}>
-                <Text style={styles.name}>{reward.name}</Text>
-                <View style={styles.point_container}>
-                  <Image
-                    style={styles.img1}
-                    source={require("./../../assets/images/coin.png")}
-                  />
-                  <Text style={styles.point}>{reward.point}</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-        ))
-      ) : (
-        <View style={styles.container}>
-          <Image
-            style={styles.img}
-            source={require("./../../assets/images/money.png")}
-          />
-          <Text style={styles.text}>No rewards available.</Text>
-        </View>
-      )} */}
     </View>
   );
 }

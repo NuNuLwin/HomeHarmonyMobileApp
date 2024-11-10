@@ -8,4 +8,6 @@ export default {
   RED_PINK: "#E26868",
   LIGHT_BLUE: "#D5DBF1",
   SHADE_BLUE: "#566FCF",
+  ORANGE: "#FAA87C",
+  PINK: "#F99191",
 };

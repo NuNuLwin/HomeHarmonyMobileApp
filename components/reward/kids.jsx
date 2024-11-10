@@ -1,25 +1,28 @@
 import { View, Text, Image, StyleSheet, ScrollView } from "react-native";
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { UserContext } from "../../contexts/UserContext";
 import Colors from "./../../constants/Colors";
 import FamilyMember from "../family/FamilyMember";
 
-export default function kids() {
+export default function kids({ onSelect, selectedKid }) {
   const { userData, setUserData } = useContext(UserContext);
-  console.log("from kids..", userData);
+
+  console.log("=== kids = selectedKid ===", selectedKid);
 
   const selectProfile = (profile) => {
-    // setUserData((prevData) => ({
-    //   ...prevData,
-    //   currentUser: profile.name,
-    // }));
-    // router.replace("/chore");
+    onSelect(profile);
   };
   return (
-    <ScrollView horizontal={true}>
+    <ScrollView horizontal={true} style={{ height: 150 }}>
       <View style={styles.container}>
         {userData?.kids?.map((kid, index) => (
-          <FamilyMember key={index} member={kid} onSelect={selectProfile} />
+          <FamilyMember
+            key={index}
+            member={kid}
+            onSelect={selectProfile}
+            isSelected={selectedKid ? selectedKid.name === kid.name : false}
+            showPoint={true}
+          />
         ))}
       </View>
     </ScrollView>

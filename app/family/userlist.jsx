@@ -49,6 +49,7 @@ export default function Userlist() {
               key={index}
               member={parent}
               onSelect={selectProfile}
+              showPoint={false}
             />
           ))}
           {userData?.kids?.map((kid, index) => (

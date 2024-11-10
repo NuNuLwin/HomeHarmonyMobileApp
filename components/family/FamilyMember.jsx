@@ -1,20 +1,31 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
-import Colors from "@/constants/Colors";
+import Colors from "./../../constants/Colors";
 
-export default function FamilyMember({ member, onSelect }) {
+export default function FamilyMember({
+  member,
+  onSelect,
+  showPoint,
+  isSelected,
+}) {
+  console.log("=== FamilyMember ===", isSelected);
+
   return (
     <TouchableOpacity style={styles.img_box} onPress={() => onSelect(member)}>
       <View style={styles.img_wrapper}>
         <Image
           source={{ uri: member.image }}
-          style={styles.profile_img}
+          style={[styles.profile_img, isSelected && styles.selectedBorder]}
           onError={(error) =>
             console.log("Image load error:", error.nativeEvent.error)
           }
         />
       </View>
-
+      {showPoint && member.point !== null && member.point !== undefined ? (
+        <View style={styles.point_box}>
+          <Text style={styles.point_text}>{member.point}</Text>
+        </View>
+      ) : null}
       <Text style={styles.text}>{member.name}</Text>
     </TouchableOpacity>
   );
@@ -24,7 +35,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 10,
-    gap: 10,
+    gap: 5,
   },
   img_wrapper: {
     width: 60,
@@ -42,5 +53,20 @@ const styles = StyleSheet.create({
   profile_img: {
     flex: 1,
     borderRadius: 50,
+  },
+  point_box: {
+    width: 55,
+    padding: 1,
+    borderRadius: 10,
+    backgroundColor: Colors.ORANGE,
+    alignItems: "center",
+  },
+  point_text: {
+    fontFamily: "outfit-regular",
+    fontSize: 14,
+  },
+  selectedBorder: {
+    borderWidth: 3,
+    borderColor: Colors.GREY,
   },
 });

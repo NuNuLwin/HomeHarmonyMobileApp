@@ -3,7 +3,9 @@ import React from "react";
 import Colors from "../../constants/Colors";
 import { TouchableOpacity } from "react-native";
 
-export default function RewardItem({ reward }) {
+export default function RewardItem({ reward, selectedKid }) {
+  const handleRedeem = () => {};
+
   return (
     <View style={styles.card}>
       <View style={styles.bar}></View>
@@ -25,16 +27,20 @@ export default function RewardItem({ reward }) {
           </View>
         </View>
 
-        <TouchableOpacity style={styles.btn}>
-          <Text style={styles.btn_text}>Redeem</Text>
-        </TouchableOpacity>
+        {selectedKid?.point >= reward.point ? (
+          <TouchableOpacity style={styles.btn} onPress={handleRedeem}>
+            <Text style={styles.btn_text}>Redeem</Text>
+          </TouchableOpacity>
+        ) : (
+          <Text style={styles.insufficient_points_text}>Not enough points</Text>
+        )}
       </View>
     </View>
   );
 }
 const styles = StyleSheet.create({
   card: {
-    marginTop: 10,
+    marginTop: 5,
     gap: 10,
     alignItems: "center",
     flexDirection: "row",
@@ -67,11 +73,12 @@ const styles = StyleSheet.create({
     height: 25,
   },
   btn: {
-    padding: 10,
+    width: "25%",
+    padding: 6,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 20,
-    backgroundColor: Colors.RED_PINK,
+    backgroundColor: Colors.PINK,
   },
   btn_text: { fontFamily: "outfit-regular", fontSize: 14 },
   mainContent: {

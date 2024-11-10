@@ -7,7 +7,7 @@ export default function AddButton({ handleAddReward }) {
   return (
     <View style={styles.btnWrapper}>
       <TouchableOpacity style={styles.btn} onPress={handleAddReward}>
-        <Feather name="plus" size={30} color="black" />
+        <Feather name="plus" size={30} color="white" />
       </TouchableOpacity>
     </View>
   );
@@ -20,8 +20,8 @@ const styles = StyleSheet.create({
     right: 20,
   },
   btn: {
-    width: 60,
-    height: 60,
+    width: 50,
+    height: 50,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 30,

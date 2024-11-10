@@ -12,7 +12,7 @@ export default function reward() {
     router.push({ pathname: "/reward/rewardList" });
   };
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{ backgroundColor: "#fff" }}>
       <View style={styles.container}>
         <Header />
         <Menu handleRewardMenuClick={handleRewardMenuClick} />

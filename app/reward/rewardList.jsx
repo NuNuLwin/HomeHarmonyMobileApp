@@ -16,9 +16,10 @@ import AddButton from "../../components/reward/AddButton";
 import AddReward from "../../components/reward/AddReward";
 import Rewards from "../../components/reward/Rewards";
 
-import { doc, setDoc } from "firebase/firestore";
+import { addDoc, collection, doc, setDoc } from "firebase/firestore";
 import { UserContext } from "../../contexts/UserContext";
 import { db } from "../../config/FirebaseConfig";
+import Colors from "../../constants/Colors";
 
 export default function RewardList() {
   const navigation = useNavigation();
@@ -28,6 +29,9 @@ export default function RewardList() {
   const [selectedKid, setSelectedKid] = useState();
 
   useEffect(() => {
+    if (userData?.kids) {
+      setSelectedKid(userData.kids[0]);
+    }
     navigation.setOptions({
       headerShown: true,
       headerTransparent: true,
@@ -45,10 +49,10 @@ export default function RewardList() {
     setIsLoading(true);
 
     try {
-      await setDoc(doc(db, "Rewards", rewardName), {
+      await addDoc(collection(db, "Rewards"), {
+        family: userData.email,
         name: rewardName,
         point: points,
-        email: userData.email,
         status: "Available",
         createdby: userData.currentUser,
       });
@@ -63,11 +67,14 @@ export default function RewardList() {
     }
   };
 
+  const OnSelectedKid = (kid) => {
+    setSelectedKid(kid);
+  };
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.WHITE }}>
       <View style={styles.container}>
-        <Kids />
-        <Rewards />
+        <Kids onSelect={OnSelectedKid} selectedKid={selectedKid} />
+        <Rewards selectedKid={selectedKid} />
       </View>
 
       {/* Add Button */}
@@ -87,9 +94,11 @@ export default function RewardList() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    gap: 20,
+    padding: 15,
     justifyContent: "flex-start",
+    display: "flex",
+    flexDirection: "column",
+    backgroundColor: Colors.WHITE,
   },
 
   footer: {
