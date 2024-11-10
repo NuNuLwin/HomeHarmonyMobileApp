@@ -1,15 +1,7 @@
-import {
-  View,
-  Text,
-  SafeAreaView,
-  StyleSheet,
-  Button,
-  TextInput,
-  Image,
-} from "react-native";
+import { View, Text, SafeAreaView, StyleSheet, Image } from "react-native";
 import React, { useContext, useEffect } from "react";
 import { useNavigation, useRouter } from "expo-router";
-import { getAuth, signOut } from "firebase/auth";
+import { signOut } from "firebase/auth";
 import { TouchableOpacity } from "react-native";
 import { auth } from "./../../../config/FirebaseConfig";
 import Colors from "./../../../constants/Colors";

@@ -1,9 +1,11 @@
 export default {
-  // PRIMARY: "#E26868",
+  //PRIMARY: "#E26868",
   PRIMARY: "#DE5454",
   LIGHT_PRIMARY: "#FACCCC",
   GREY: "#8F8E8D",
   LIGHT_GREY: "#D9D9D9",
   WHITE: "#FFFFFF",
-  RED_PINK: "#DE5454",
+  RED_PINK: "#E26868",
+  LIGHT_BLUE: "#D5DBF1",
+  SHADE_BLUE: "#566FCF",
 };

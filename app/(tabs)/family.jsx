@@ -61,6 +61,7 @@ const styles = StyleSheet.create({
   },
 
   member_box: {
+    flexWrap: "wrap",
     backgroundColor: Colors.WHITE,
     marginTop: -30,
     height: "100%",
@@ -74,5 +75,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     flexDirection: "row",
+    flexWrap: "wrap",
   },
 });

@@ -6,6 +6,7 @@ import { UserContext } from "../../contexts/UserContext";
 import { useRouter } from "expo-router";
 import HeaderLogo from "../../components/common/headerLogo";
 import FamilyMember from "../../components/family/FamilyMember";
+import Colors from "../../constants/Colors";
 
 export default function Userlist() {
   const { userData, setUserData } = useContext(UserContext);
@@ -38,16 +39,22 @@ export default function Userlist() {
     });
   };
   return (
-    <SafeAreaView style={styles.container}>
-      <HeaderLogo />
-      <Text style={styles.title}>Who are you?</Text>
-      <View style={styles.body_wrapper}>
-        {userData?.parents?.map((parent, index) => (
-          <FamilyMember key={index} member={parent} onSelect={selectProfile} />
-        ))}
-        {userData?.kids?.map((kid, index) => (
-          <FamilyMember key={index} member={kid} onSelect={selectProfile} />
-        ))}
+    <SafeAreaView>
+      <View style={styles.container}>
+        <HeaderLogo />
+        <Text style={styles.title}>Who are you?</Text>
+        <View style={styles.body_wrapper}>
+          {userData?.parents?.map((parent, index) => (
+            <FamilyMember
+              key={index}
+              member={parent}
+              onSelect={selectProfile}
+            />
+          ))}
+          {userData?.kids?.map((kid, index) => (
+            <FamilyMember key={index} member={kid} onSelect={selectProfile} />
+          ))}
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -55,7 +62,6 @@ export default function Userlist() {
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    justifyContent: "center",
     padding: 40,
   },
 
@@ -65,7 +71,7 @@ const styles = StyleSheet.create({
     fontFamily: "outfit-regular",
   },
   body_wrapper: {
-    marginTop: 20,
+    flexWrap: "wrap",
     justifyContent: "center",
     alignItems: "center",
     flexDirection: "row",

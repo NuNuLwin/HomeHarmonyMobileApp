@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
   img_box: {
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: 10,
     gap: 10,
   },
   img_wrapper: {
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   text: {
-    fontFamily: "outfit-bold",
+    fontFamily: "outfit-regular",
     fontSize: 16,
   },
   profile_img: {
