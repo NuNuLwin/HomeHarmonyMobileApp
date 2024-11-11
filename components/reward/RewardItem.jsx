@@ -1,10 +1,94 @@
-import { View, Text, StyleSheet, Image } from "react-native";
-import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
+import React, { useContext, useState } from "react";
 import Colors from "../../constants/Colors";
 import { TouchableOpacity } from "react-native";
+import { UserContext } from "../../contexts/UserContext";
+import {
+  getDoc,
+  updateDoc,
+  doc,
+  addDoc,
+  collection,
+  Timestamp,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
+
+import { db } from "../../config/FirebaseConfig";
 
 export default function RewardItem({ reward, selectedKid }) {
-  const handleRedeem = () => {};
+  const { userData, setUserData } = useContext(UserContext);
+  const [loading, setLoading] = useState(false);
+
+  const handleRedeem = async () => {
+    console.log("=======check reward....", reward);
+
+    setLoading(true);
+    try {
+      const familiesRef = collection(db, "Families");
+      const q = query(
+        familiesRef,
+        where("email", "==", userData.email.toLowerCase())
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        // Family document found
+        const familyDoc = querySnapshot.docs[0];
+        const familyData = familyDoc.data();
+        console.log("Family document data:", familyData);
+
+        const kidIndex = familyData.kids.findIndex(
+          (kid) => kid.name === selectedKid.name
+        );
+
+        if (kidIndex !== -1) {
+          const updatedKids = [...familyData.kids];
+          updatedKids[kidIndex].point -= reward.point;
+
+          // Update kids points in family document
+          await updateDoc(familyDoc.ref, { kids: updatedKids });
+
+          const updatedUserData = {
+            ...userData,
+            kids: updatedKids,
+          };
+          setUserData(updatedUserData);
+        }
+
+        // Save data to Redeemed collection
+        await addDoc(collection(db, "Redeemed"), {
+          family: userData.email,
+          kidName: selectedKid.name,
+          rewardname: reward.name,
+          point: reward.point,
+          redeemBy: userData.currentUser,
+          redeemDate: Timestamp.now(),
+        });
+
+        Alert.alert("Congratulations!", `You have redeemed ${reward.name}`);
+      } else {
+        console.log("No family document found with this email.");
+      }
+    } catch (error) {
+      console.error("Error saving reward: ", error);
+      Alert.alert("Error saving redeem. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const kidInUserData = userData.kids?.find(
+    (kid) => kid.name === selectedKid.name
+  );
 
   return (
     <View style={styles.card}>
@@ -27,7 +111,9 @@ export default function RewardItem({ reward, selectedKid }) {
           </View>
         </View>
 
-        {selectedKid?.point >= reward.point ? (
+        {loading ? (
+          <ActivityIndicator size="medium" color={Colors.PINK} />
+        ) : kidInUserData && kidInUserData.point >= reward.point ? (
           <TouchableOpacity style={styles.btn} onPress={handleRedeem}>
             <Text style={styles.btn_text}>Redeem</Text>
           </TouchableOpacity>
@@ -38,6 +124,7 @@ export default function RewardItem({ reward, selectedKid }) {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   card: {
     marginTop: 5,

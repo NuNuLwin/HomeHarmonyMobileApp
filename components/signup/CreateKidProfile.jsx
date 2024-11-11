@@ -13,7 +13,7 @@ import Folders from "@/constants/Folders";
 // components
 import DateInput from "./DateInput";
 import LoadingScreen from "./loading.jsx";
-import { Uploading } from "../common/Uploading.jsx"
+import { Uploading } from "../common/Uploading.jsx";
 
 // firebase
 import { auth, db, storage } from "./../../config/FirebaseConfig";
@@ -67,7 +67,7 @@ export default function CreateKidProfile() {
     });
 
     if (!result.canceled) {
-      console.log('img:', result.assets[0].uri)
+      console.log("img:", result.assets[0].uri);
       setImage(result.assets[0].uri);
       setShowModal(true);
       const url = await uploadImage(result.assets[0].uri, "image");
@@ -76,12 +76,15 @@ export default function CreateKidProfile() {
       setKids(updatedKids);
       setShowModal(false);
     }
-  }
+  };
 
   async function doUploadImage(uri, uploadProgress) {
     const response = await fetch(uri);
     const blob = await response.blob();
-    const storageRef = ref(storage, `${PROFILE_FOLDER}/` + new Date().getTime());
+    const storageRef = ref(
+      storage,
+      `${PROFILE_FOLDER}/` + new Date().getTime()
+    );
     const task = uploadBytesResumable(storageRef, blob);
 
     task.on(
@@ -95,22 +98,22 @@ export default function CreateKidProfile() {
       },
       (error) => {
         // handle error
-        console.log('File upload error:', error);
+        console.log("File upload error:", error);
       }
-    )
+    );
     await task;
-    return await getDownloadURL(task.snapshot.ref)
+    return await getDownloadURL(task.snapshot.ref);
   }
 
   const uploadImage = async (uri) => {
     let file_url = await doUploadImage(uri, true);
-    
+
     // clean up
     setProgress(0);
     setImage(null);
 
-    return file_url
-  }
+    return file_url;
+  };
 
   const confirmDate = (index, _date) => {
     const updatedKids = [...kids];
@@ -175,6 +178,7 @@ export default function CreateKidProfile() {
           email: user.email,
           parents: signUpData.parents,
           kids: signUpData.kids,
+          point: 0,
         });
         setLoading(false);
 
@@ -230,16 +234,18 @@ export default function CreateKidProfile() {
 
       {kids.map((kid, index) => (
         <View key={index} style={styles.box}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.img_wrapper}
             onPress={() => pickImage(index)}
           >
-            {kid.image && <Image
-              source={{
-                uri: kid.image
-              }}
-              style={styles.profile_img}
-            />}
+            {kid.image && (
+              <Image
+                source={{
+                  uri: kid.image,
+                }}
+                style={styles.profile_img}
+              />
+            )}
           </TouchableOpacity>
           <View style={{ flex: 1 }}>
             <TextInput
