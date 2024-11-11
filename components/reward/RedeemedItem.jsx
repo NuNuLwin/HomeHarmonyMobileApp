@@ -1,5 +1,7 @@
 import { View, Text, StyleSheet, Image } from "react-native";
 import Colors from "../../constants/Colors";
+import { useContext } from "react";
+import { UserContext } from "../../contexts/UserContext";
 
 export default function RedeemedItem({ redeemed, selectedKid }) {
   const formattedDate =
@@ -28,6 +30,11 @@ export default function RedeemedItem({ redeemed, selectedKid }) {
           </View>
           <View style={styles.date_warpper}>
             <Text style={styles.date}>{formattedDate}</Text>
+            {!selectedKid && (
+              <View style={styles.kid_name_wrapper}>
+                <Text style={styles.point}>{redeemed.kidName}</Text>
+              </View>
+            )}
           </View>
         </View>
       </View>
@@ -96,5 +103,14 @@ const styles = StyleSheet.create({
   date_warpper: {
     flex: 1,
     alignItems: "flex-end",
+  },
+  kid_name_wrapper: {
+    width: "20%",
+    borderRadius: 50,
+    borderWidth: 1,
+    alignItems: "center",
+    borderColor: Colors.LIGHT_GREY,
+    backgroundColor: Colors.LIGHT_GREY,
+    marginTop: 10,
   },
 });

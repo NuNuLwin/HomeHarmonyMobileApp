@@ -23,13 +23,17 @@ export default function Redeemed({ selectedKid }) {
   const { userData } = useContext(UserContext);
   const [loader, setLoader] = useState(false);
 
-  // Ensure selectedKid is defined before calling GetAllRedeemed
   useEffect(() => {
     if (selectedKid) {
       setRedeemed([]);
       GetAllRedeemedByKid();
     }
   }, [selectedKid]);
+
+  useEffect(() => {
+    setRedeemed([]);
+    GetAllRedeemedByKid();
+  }, []);
 
   /**
    * Used to Get all redeemed  from DB
@@ -38,16 +42,22 @@ export default function Redeemed({ selectedKid }) {
     setRedeemed([]);
     setLoader(true);
     try {
-      const q = query(
-        collection(db, "Redeemed"),
-        where("family", "==", userData.email),
-        where("kidName", "==", selectedKid?.name) // Use optional chaining
-      );
+      const q = selectedKid
+        ? query(
+            collection(db, "Redeemed"),
+            where("family", "==", userData.email),
+            where("kidName", "==", selectedKid?.name) // Use optional chaining
+          )
+        : query(
+            collection(db, "Redeemed"),
+            where("family", "==", userData.email)
+          );
+
+      console.log("q.....");
       const querySnapshot = await getDocs(q);
 
       const redeemedList = querySnapshot.docs.map((doc) => {
         const data = doc.data();
-
         return {
           ...data,
           redeemDate: data.redeemDate?.toDate
@@ -69,7 +79,11 @@ export default function Redeemed({ selectedKid }) {
 
   return (
     <View style={{ height: height - 350 }}>
-      <Text style={styles.title}>Redeemed for {selectedKid?.name}</Text>
+      {selectedKid ? (
+        <Text style={styles.title}>Redeemed for {selectedKid?.name}</Text>
+      ) : (
+        <Text style={styles.title}>Redeemed History</Text>
+      )}
 
       {loader ? (
         <ActivityIndicator
@@ -77,7 +91,7 @@ export default function Redeemed({ selectedKid }) {
           color={Colors.PRIMARY}
           style={styles.loader}
         />
-      ) : selectedKid && redeemed.length > 0 ? (
+      ) : redeemed.length > 0 ? (
         <View style={{ marginTop: 10 }}>
           <FlatList
             data={redeemed.sort((a, b) => a.point - b.point)}
@@ -103,7 +117,7 @@ export default function Redeemed({ selectedKid }) {
 
 const styles = StyleSheet.create({
   title: {
-    fontFamily: "outfit-bold",
+    fontFamily: "outfit-medium",
     fontSize: 20,
   },
   container: {

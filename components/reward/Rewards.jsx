@@ -74,7 +74,7 @@ export default function Rewards({ selectedKid }) {
   };
   return (
     <View style={{ height: height - 350 }}>
-      <Text style={styles.title}>Rewards for </Text>
+      <Text style={styles.title}>Rewards for {selectedKid?.name}</Text>
 
       {selectedKid && rewards.length > 0 ? (
         <View style={{ marginTop: 10 }}>
@@ -101,7 +101,7 @@ export default function Rewards({ selectedKid }) {
 }
 const styles = StyleSheet.create({
   title: {
-    fontFamily: "outfit-bold",
+    fontFamily: "outfit-medium",
     fontSize: 20,
   },
   container: {

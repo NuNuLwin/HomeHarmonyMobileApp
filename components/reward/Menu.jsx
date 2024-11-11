@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: Colors.SHADE_BLUE,
-    fontFamily: "outfit-bold",
+    fontFamily: "outfit-medium",
     fontSize: 18,
   },
   box1: {
