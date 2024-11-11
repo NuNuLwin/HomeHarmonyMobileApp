@@ -30,6 +30,7 @@ export default function FamilyMember({
     </TouchableOpacity>
   );
 }
+
 const styles = StyleSheet.create({
   img_box: {
     justifyContent: "center",
@@ -52,11 +53,11 @@ const styles = StyleSheet.create({
   },
   profile_img: {
     flex: 1,
+
     borderRadius: 50,
   },
   point_box: {
     width: 55,
-    padding: 1,
     borderRadius: 10,
     backgroundColor: Colors.ORANGE,
     alignItems: "center",

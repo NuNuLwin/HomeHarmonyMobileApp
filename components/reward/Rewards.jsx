@@ -14,7 +14,6 @@ import {
   query,
   where,
   onSnapshot,
-  orderBy,
 } from "firebase/firestore";
 import { UserContext } from "../../contexts/UserContext";
 import { db } from "../../config/FirebaseConfig";
@@ -25,16 +24,9 @@ import RewardItem from "./RewardItem";
 const { height } = Dimensions.get("window");
 
 export default function Rewards({ selectedKid }) {
-  console.log("=== Rewards - selectedKid ===", selectedKid);
   const [rewards, setRewards] = useState([]);
   const { userData, setUserData } = useContext(UserContext);
   const [loader, setLoader] = useState(false);
-
-  // useEffect(() => {
-  //   setRewards([]);
-  //   GetAllRewards();
-  //   console.log("rewards..", rewards);
-  // }, []);
 
   useEffect(() => {
     setRewards([]);

@@ -1,34 +1,34 @@
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, ActivityIndicator } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import React, { useContext, useEffect, useState } from "react";
-import Colors from "./../../constants/Colors";
+import Colors from "../../constants/Colors";
 import { TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../config/FirebaseConfig";
 import { UserContext } from "../../contexts/UserContext";
 
-export default function Menu({ handleRewardMenuClick }) {
+export default function Menu({
+  handleRewardMenuClick,
+  handleRedeemedMenuClick,
+}) {
   const router = useRouter();
   const { userData, setUserData } = useContext(UserContext);
-  const [rewardCount, setRewardCount] = useState();
+  const [rewardCount, setRewardCount] = useState(0);
+  const [redeemedCount, setRedeemedCount] = useState(0);
   const isFocused = useIsFocused();
-  const [loading, setLoading] = useState(true);
+  const [loadingRewards, setLoadingRewards] = useState(true);
+  const [loadingRedeemed, setLoadingRedeemed] = useState(true);
 
   useEffect(() => {
+    setLoadingRewards(true);
+    setLoadingRedeemed(true);
     CountRewards();
-  }, []);
-
-  useEffect(() => {
-    if (isFocused) {
-      setLoading(true);
-      CountRewards();
-    }
+    CountRedeemed();
   }, [isFocused]);
 
   const CountRewards = async () => {
     try {
-      setLoading(true);
       const q = query(
         collection(db, "Rewards"),
         where("family", "==", userData.email),
@@ -36,11 +36,28 @@ export default function Menu({ handleRewardMenuClick }) {
       );
       const querySnapshot = await getDocs(q);
       const rewardCount = querySnapshot.docs.length;
-      console.log("=== rewardCount ===", rewardCount);
       setRewardCount(rewardCount);
-      setLoading(false);
+      setLoadingRewards(false);
     } catch (error) {
       console.error("Error fetching rewards: ", error);
+      setLoadingRewards(false);
+    }
+  };
+
+  const CountRedeemed = async () => {
+    try {
+      const q = query(
+        collection(db, "Redeemed"),
+        where("family", "==", userData.email)
+      );
+      const querySnapshot = await getDocs(q);
+      const redeemedCount = querySnapshot.docs.length;
+
+      setRedeemedCount(redeemedCount);
+      setLoadingRedeemed(false);
+    } catch (error) {
+      console.error("Error fetching redeemed: ", error);
+      setLoadingRedeemed(false);
     }
   };
 
@@ -52,24 +69,34 @@ export default function Menu({ handleRewardMenuClick }) {
           <Image
             style={styles.img}
             source={require("./../../assets/images/cup.png")}
-          ></Image>
+          />
           <View>
             <Text style={[styles.box_text, styles.number]}>
-              {loading ? "..." : rewardCount}
+              {loadingRewards ? (
+                <ActivityIndicator size="small" color={Colors.SHADE_BLUE} />
+              ) : (
+                rewardCount
+              )}
             </Text>
             <Text style={styles.box_text}>Rewards</Text>
           </View>
         </View>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.box}>
+      <TouchableOpacity style={styles.box} onPress={handleRedeemedMenuClick}>
         <Text style={styles.title}>Redeem</Text>
         <View style={styles.box1}>
           <Image
             style={styles.img}
             source={require("./../../assets/images/rewards.png")}
-          ></Image>
+          />
           <View>
-            <Text style={[styles.box_text, styles.number]}>3</Text>
+            <Text style={[styles.box_text, styles.number]}>
+              {loadingRedeemed ? (
+                <ActivityIndicator size="small" color={Colors.SHADE_BLUE} />
+              ) : (
+                redeemedCount
+              )}
+            </Text>
             <Text style={styles.box_text}>Redeemed</Text>
           </View>
         </View>
@@ -77,6 +104,7 @@ export default function Menu({ handleRewardMenuClick }) {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: { flexDirection: "row", gap: 10 },
   box: {

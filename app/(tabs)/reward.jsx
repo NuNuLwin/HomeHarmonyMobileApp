@@ -8,14 +8,19 @@ import { useRouter } from "expo-router";
 export default function reward() {
   const router = useRouter();
   const handleRewardMenuClick = () => {
-    console.log("handleRewardMenuClick");
-    router.push({ pathname: "/reward/rewardList" });
+    router.push({ pathname: "/reward/rewardScreen" });
+  };
+  const handleRedeemedMenuClick = () => {
+    router.push({ pathname: "/reward/redeemedScreen" });
   };
   return (
     <SafeAreaView style={{ backgroundColor: "#fff" }}>
       <View style={styles.container}>
         <Header />
-        <Menu handleRewardMenuClick={handleRewardMenuClick} />
+        <Menu
+          handleRewardMenuClick={handleRewardMenuClick}
+          handleRedeemedMenuClick={handleRedeemedMenuClick}
+        />
         <Text>Redeemed History</Text>
         {/* <Kids /> */}
       </View>

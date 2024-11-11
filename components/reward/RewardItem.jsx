@@ -29,8 +29,6 @@ export default function RewardItem({ reward, selectedKid }) {
   const [loading, setLoading] = useState(false);
 
   const handleRedeem = async () => {
-    console.log("=======check reward....", reward);
-
     setLoading(true);
     try {
       const familiesRef = collection(db, "Families");
@@ -44,7 +42,6 @@ export default function RewardItem({ reward, selectedKid }) {
         // Family document found
         const familyDoc = querySnapshot.docs[0];
         const familyData = familyDoc.data();
-        console.log("Family document data:", familyData);
 
         const kidIndex = familyData.kids.findIndex(
           (kid) => kid.name === selectedKid.name
@@ -68,7 +65,7 @@ export default function RewardItem({ reward, selectedKid }) {
         await addDoc(collection(db, "Redeemed"), {
           family: userData.email,
           kidName: selectedKid.name,
-          rewardname: reward.name,
+          rewardName: reward.name,
           point: reward.point,
           redeemBy: userData.currentUser,
           redeemDate: Timestamp.now(),

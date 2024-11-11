@@ -16,8 +16,8 @@ export default function AddButton({ handleAddReward }) {
 const styles = StyleSheet.create({
   btnWrapper: {
     position: "absolute",
-    bottom: 60,
-    right: 20,
+    left: "50%",
+    transform: [{ translateX: -25 }],
   },
   btn: {
     width: 50,
@@ -26,5 +26,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 30,
     backgroundColor: Colors.RED_PINK,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
   },
 });

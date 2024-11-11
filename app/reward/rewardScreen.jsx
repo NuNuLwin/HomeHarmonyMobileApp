@@ -1,14 +1,6 @@
-import {
-  View,
-  Text,
-  SafeAreaView,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-} from "react-native";
+import { View, SafeAreaView, StyleSheet, Alert } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigation } from "expo-router";
-import Modal from "react-native-modal";
 
 // components
 import Kids from "../../components/reward/kids";
@@ -16,12 +8,12 @@ import AddButton from "../../components/reward/AddButton";
 import AddReward from "../../components/reward/AddReward";
 import Rewards from "../../components/reward/Rewards";
 
-import { addDoc, collection, doc, setDoc } from "firebase/firestore";
+import { addDoc, collection } from "firebase/firestore";
 import { UserContext } from "../../contexts/UserContext";
 import { db } from "../../config/FirebaseConfig";
 import Colors from "../../constants/Colors";
 
-export default function RewardList() {
+export default function RewardScreen() {
   const navigation = useNavigation();
   const [isModalVisible, setModalVisible] = useState(false);
   const { userData, setUserData } = useContext(UserContext);
@@ -63,13 +55,14 @@ export default function RewardList() {
       console.error("Error saving reward: ", error);
       Alert.alert("Error saving reward. Please try again.");
     } finally {
-      setIsLoading(false); // Set loading to false when done
+      setIsLoading(false);
     }
   };
 
   const OnSelectedKid = (kid) => {
     setSelectedKid(kid);
   };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.WHITE }}>
       <View style={styles.container}>
@@ -102,7 +95,7 @@ const styles = StyleSheet.create({
   },
 
   footer: {
-    flex: 1,
+    marginBottom: 20, // Adjusted to prevent any layout issues
   },
   modal_wrapper: {
     alignItems: "center",
