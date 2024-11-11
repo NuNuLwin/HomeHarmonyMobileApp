@@ -72,6 +72,17 @@ export default function Rewards({ selectedKid }) {
       console.error("Error fetching rewards: ", error);
     }
   };
+
+  const handleDeleteReward = (rewardToDelete) => {
+    console.log("reward..", rewards);
+    // console.log("rewardToDelete.name..", rewardToDelete.name);
+    const updatedRewards = rewards.filter(
+      (reward) => reward.name !== rewardToDelete.name
+    );
+    console.log("updatedRewards..", updatedRewards);
+
+    setRewards(updatedRewards);
+  };
   return (
     <View style={{ height: height - 350 }}>
       <Text style={styles.title}>Rewards for {selectedKid?.name}</Text>
@@ -83,7 +94,11 @@ export default function Rewards({ selectedKid }) {
             refreshing={loader}
             onRefresh={() => GetAllRewards()}
             renderItem={({ item, index }) => (
-              <RewardItem reward={item} selectedKid={selectedKid} />
+              <RewardItem
+                reward={item}
+                selectedKid={selectedKid}
+                onDelete={handleDeleteReward}
+              />
             )}
           />
         </View>

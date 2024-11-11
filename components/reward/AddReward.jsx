@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     width: "80%",
   },
   btn: {
-    backgroundColor: Colors.RED_PINK,
+    backgroundColor: Colors.PINK,
     padding: 10,
     borderRadius: 20,
     width: "100%",

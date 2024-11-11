@@ -3,6 +3,7 @@ import { useFonts } from "expo-font";
 import { useState } from "react";
 import { SignUpContext } from "../contexts/SignUpContext";
 import { UserContext } from "../contexts/UserContext";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function RootLayout() {
   useFonts({
@@ -17,12 +18,14 @@ export default function RootLayout() {
   const [userData, setUserData] = useState({});
 
   return (
-    <SignUpContext.Provider value={{ signUpData, setSignUpData }}>
-      <UserContext.Provider value={{ userData, setUserData }}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" />
-        </Stack>
-      </UserContext.Provider>
-    </SignUpContext.Provider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SignUpContext.Provider value={{ signUpData, setSignUpData }}>
+        <UserContext.Provider value={{ userData, setUserData }}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" />
+          </Stack>
+        </UserContext.Provider>
+      </SignUpContext.Provider>
+    </GestureHandlerRootView>
   );
 }

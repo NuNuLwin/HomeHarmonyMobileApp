@@ -53,7 +53,6 @@ const styles = StyleSheet.create({
   },
   profile_img: {
     flex: 1,
-
     borderRadius: 50,
   },
   point_box: {

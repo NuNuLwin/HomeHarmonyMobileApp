@@ -53,7 +53,6 @@ export default function Redeemed({ selectedKid }) {
             where("family", "==", userData.email)
           );
 
-      console.log("q.....");
       const querySnapshot = await getDocs(q);
 
       const redeemedList = querySnapshot.docs.map((doc) => {
