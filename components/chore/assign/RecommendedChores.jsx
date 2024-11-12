@@ -1,15 +1,15 @@
 import { View, Text, StyleSheet } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
-import { UserContext } from "../../../contexts/UserContext";
 import RecommendedChoreItem from "./RecommendedChoreItem";
 import { FlatList } from "react-native";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../../config/FirebaseConfig";
 import { ChoreContext } from "../../../contexts/ChoreContext";
+import { ActivityIndicator } from "react-native";
+import Colors from "../../../constants/Colors";
 
 export default function RecommendedChores({ selectedKid }) {
-  const { userData } = useContext(UserContext);
-  const { choreData, setChoreData } = useContext(ChoreContext);
+  const { setChoreData } = useContext(ChoreContext);
   const [recommendedChore, setRecommendedChore] = useState(null);
   const [loader, setLoader] = useState(false);
 
@@ -79,7 +79,11 @@ export default function RecommendedChores({ selectedKid }) {
   return (
     <View>
       {loader ? (
-        <Text>Loading...</Text>
+        <ActivityIndicator
+          size="small"
+          color={Colors.PRIMARY}
+          style={styles.loader}
+        />
       ) : (
         <FlatList
           data={recommendedChore?.chores || []}
@@ -91,7 +95,9 @@ export default function RecommendedChores({ selectedKid }) {
             <RecommendedChoreItem chore={item} selectedKid={selectedKid} />
           )}
           ListEmptyComponent={() => (
-            <Text>No recommended chores available</Text>
+            <View style={styles.text_wrapper}>
+              <Text style={styles.text}>No recommended chores available</Text>
+            </View>
           )}
         />
       )}
@@ -104,4 +110,10 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: "#ddd",
   },
+  loader: {
+    marginTop: 20,
+    alignSelf: "center",
+  },
+  text: { fontFamily: "outfit-light", fontSize: 18, color: Colors.GREY },
+  text_wrapper: { padding: 30, alignItems: "center" },
 });

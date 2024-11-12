@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
   point_container: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between", // Distribute items to push button to the right
+    justifyContent: "space-between",
     marginTop: 5,
   },
   point: {

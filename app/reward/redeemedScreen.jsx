@@ -1,23 +1,20 @@
-import { View, SafeAreaView, StyleSheet, Alert } from "react-native";
+import { View, SafeAreaView, StyleSheet } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigation } from "expo-router";
 
 // components
 import Kids from "../../components/reward/kids";
-import AddButton from "../../components/reward/AddButton";
-import AddReward from "../../components/reward/AddReward";
-import Rewards from "../../components/reward/Rewards";
-
-import { addDoc, collection } from "firebase/firestore";
-import { UserContext } from "../../contexts/UserContext";
-import { db } from "../../config/FirebaseConfig";
-import Colors from "../../constants/Colors";
 import Redeemed from "../../components/reward/Redeemed";
+
+// context
+import { UserContext } from "../../contexts/UserContext";
+
+// constants
+import Colors from "../../constants/Colors";
 
 export default function RedeemedScreen() {
   const navigation = useNavigation();
-  const { userData, setUserData } = useContext(UserContext);
-  const [isLoading, setIsLoading] = useState(false);
+  const { userData } = useContext(UserContext);
   const [selectedKid, setSelectedKid] = useState();
 
   useEffect(() => {
@@ -65,7 +62,7 @@ const styles = StyleSheet.create({
   },
 
   footer: {
-    marginBottom: 20, // Adjusted to prevent any layout issues
+    marginBottom: 20,
   },
   modal_wrapper: {
     alignItems: "center",

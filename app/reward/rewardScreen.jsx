@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
   },
 
   footer: {
-    marginBottom: 20, // Adjusted to prevent any layout issues
+    marginBottom: 20,
   },
   modal_wrapper: {
     alignItems: "center",

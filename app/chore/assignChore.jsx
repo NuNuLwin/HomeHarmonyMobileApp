@@ -4,7 +4,6 @@ import {
   SafeAreaView,
   StyleSheet,
   ScrollView,
-  Image,
   Animated,
   TouchableOpacity,
 } from "react-native";
@@ -14,16 +13,14 @@ import Colors from "../../constants/Colors";
 import Kids from "../../components/reward/kids";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { UserContext } from "../../contexts/UserContext";
-import RecommendedChoreItem from "../../components/chore/assign/RecommendedChoreItem";
 import RecommendedChores from "../../components/chore/assign/RecommendedChores";
 import { ChoreContext } from "../../contexts/ChoreContext";
 
 export default function AssignChore() {
   const navigation = useNavigation();
   const [selectedKid, setSelectedKid] = useState();
-  const [selectedKidAge, setSelectedKidAge] = useState();
-  const { userData, setUserData } = useContext(UserContext);
-  const { choreData, setChoreData } = useContext(ChoreContext);
+  const { userData } = useContext(UserContext);
+  const { choreData } = useContext(ChoreContext);
 
   // States for collapsible animations
   const [recommendedHeight] = useState(new Animated.Value(0));
@@ -51,7 +48,7 @@ export default function AssignChore() {
     });
 
     Animated.timing(recommendedHeight, {
-      toValue: 400, // Adjust based on content size
+      toValue: 400,
       duration: 300,
       useNativeDriver: false,
     }).start();
@@ -75,7 +72,7 @@ export default function AssignChore() {
     }
 
     Animated.timing(recommendedHeight, {
-      toValue: isRecommendedOpen ? 0 : 400, // Adjust 250 based on content size
+      toValue: isRecommendedOpen ? 0 : 400,
       duration: 300,
       useNativeDriver: false,
     }).start();
@@ -95,7 +92,7 @@ export default function AssignChore() {
     }
 
     Animated.timing(customHeight, {
-      toValue: isCustomOpen ? 0 : 400, // Adjust 250 based on content size
+      toValue: isCustomOpen ? 0 : 400,
       duration: 300,
       useNativeDriver: false,
     }).start();
@@ -139,7 +136,6 @@ export default function AssignChore() {
             style={{ height: recommendedHeight, overflow: "hidden" }}
           >
             <RecommendedChores selectedKid={selectedKid} />
-            {/* Additional Chore Cards Here */}
           </Animated.View>
         </View>
 
@@ -192,6 +188,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    paddingHorizontal: 20,
   },
 
   custom_color: {
