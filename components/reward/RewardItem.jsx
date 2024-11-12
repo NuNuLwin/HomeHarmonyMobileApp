@@ -118,22 +118,25 @@ export default function RewardItem({ reward, selectedKid, onDelete }) {
     }
   };
   const rightSwipeActions = (e, re) => {
-    return (
-      <View style={{ width: 100, marginTop: 5 }}>
-        <Animated.View style={{ flex: 1, transform: [{ translateX: 0 }] }}>
-          <RectButton
-            onPress={() => rightSwipeDeleteActions(reward)}
-            style={[styles.rightAction, { backgroundColor: "#dd2150" }]}
-          >
-            {loading ? (
-              <Text style={styles.actionText}>Deleting</Text>
-            ) : (
-              <Text style={styles.actionText}>Delete</Text>
-            )}
-          </RectButton>
-        </Animated.View>
-      </View>
-    );
+    if (userData.currentRole === "parent") {
+      return (
+        <View style={{ width: 100, marginTop: 5 }}>
+          <Animated.View style={{ flex: 1, transform: [{ translateX: 0 }] }}>
+            <RectButton
+              onPress={() => rightSwipeDeleteActions(reward)}
+              style={[styles.rightAction, { backgroundColor: "#dd2150" }]}
+            >
+              {loading ? (
+                <Text style={styles.actionText}>Deleting</Text>
+              ) : (
+                <Text style={styles.actionText}>Delete</Text>
+              )}
+            </RectButton>
+          </Animated.View>
+        </View>
+      );
+    }
+    return null;
   };
 
   return (

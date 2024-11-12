@@ -21,7 +21,12 @@ export default function RewardScreen() {
   const [selectedKid, setSelectedKid] = useState();
 
   useEffect(() => {
-    if (userData?.kids) {
+    if (userData.currentRole === "kid" && userData?.kids) {
+      const currentKid = userData.kids.find(
+        (kid) => kid.name === userData.currentUser
+      );
+      setSelectedKid(currentKid);
+    } else if (userData.currentRole === "parent" && userData?.kids) {
       setSelectedKid(userData.kids[0]);
     }
     navigation.setOptions({
@@ -30,7 +35,7 @@ export default function RewardScreen() {
       headerTitle: "Rewards",
       headerBackTitle: "Back",
     });
-  }, []);
+  }, [userData, setSelectedKid]);
 
   const handleAddReward = () => {
     setModalVisible(!isModalVisible); // Toggle the modal visibility

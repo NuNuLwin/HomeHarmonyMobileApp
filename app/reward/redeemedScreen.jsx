@@ -21,7 +21,12 @@ export default function RedeemedScreen() {
   const [selectedKid, setSelectedKid] = useState();
 
   useEffect(() => {
-    if (userData?.kids) {
+    if (userData.currentRole === "kid" && userData?.kids) {
+      const currentKid = userData.kids.find(
+        (kid) => kid.name === userData.currentUser
+      );
+      setSelectedKid(currentKid);
+    } else if (userData.currentRole === "parent" && userData?.kids) {
       setSelectedKid(userData.kids[0]);
     }
     navigation.setOptions({
@@ -30,7 +35,7 @@ export default function RedeemedScreen() {
       headerTitle: "Redeemed",
       headerBackTitle: "Back",
     });
-  }, []);
+  }, [userData, setSelectedKid]);
 
   const OnSelectedKid = (kid) => {
     setSelectedKid(kid);

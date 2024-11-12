@@ -42,16 +42,25 @@ export default function Redeemed({ selectedKid }) {
     setRedeemed([]);
     setLoader(true);
     try {
-      const q = selectedKid
-        ? query(
-            collection(db, "Redeemed"),
-            where("family", "==", userData.email),
-            where("kidName", "==", selectedKid?.name) // Use optional chaining
-          )
-        : query(
-            collection(db, "Redeemed"),
-            where("family", "==", userData.email)
-          );
+      const q =
+        userData.currentRole === "parent"
+          ? selectedKid
+            ? query(
+                collection(db, "Redeemed"),
+                where("family", "==", userData.email),
+                where("kidName", "==", selectedKid?.name) // Use optional chaining
+              )
+            : query(
+                collection(db, "Redeemed"),
+                where("family", "==", userData.email)
+              )
+          : userData.currentRole === "kid"
+          ? query(
+              collection(db, "Redeemed"),
+              where("family", "==", userData.email),
+              where("kidName", "==", userData.currentUser)
+            )
+          : null;
 
       const querySnapshot = await getDocs(q);
 

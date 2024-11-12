@@ -16,6 +16,7 @@ export default function Userlist() {
     setUserData((prevData) => ({
       ...prevData,
       currentUser: profile.name,
+      currentRole: profile.role,
     }));
     router.replace("/chore");
   };
@@ -47,13 +48,17 @@ export default function Userlist() {
           {userData?.parents?.map((parent, index) => (
             <FamilyMember
               key={index}
-              member={parent}
+              member={{ ...parent, role: "parent" }}
               onSelect={selectProfile}
               showPoint={false}
             />
           ))}
           {userData?.kids?.map((kid, index) => (
-            <FamilyMember key={index} member={kid} onSelect={selectProfile} />
+            <FamilyMember
+              key={index}
+              member={{ ...kid, role: "kid" }}
+              onSelect={selectProfile}
+            />
           ))}
         </View>
       </View>

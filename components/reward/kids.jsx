@@ -15,15 +15,26 @@ export default function kids({ onSelect, selectedKid }) {
   return (
     <ScrollView horizontal={true} style={{ height: 150 }}>
       <View style={styles.container}>
-        {userData?.kids?.map((kid, index) => (
-          <FamilyMember
-            key={index}
-            member={kid}
-            onSelect={selectProfile}
-            isSelected={selectedKid ? selectedKid.name === kid.name : false}
-            showPoint={true}
-          />
-        ))}
+        {userData?.currentRole === "parent"
+          ? userData?.kids?.map((kid, index) => (
+              <FamilyMember
+                key={index}
+                member={kid}
+                onSelect={selectProfile}
+                isSelected={selectedKid ? selectedKid.name === kid.name : false}
+                showPoint={true}
+              />
+            ))
+          : userData?.currentRole === "kid" &&
+            selectedKid && (
+              <FamilyMember
+                key={selectedKid.name} // or use a unique identifier like ID
+                member={selectedKid}
+                onSelect={selectProfile}
+                isSelected={true}
+                showPoint={true}
+              />
+            )}
       </View>
     </ScrollView>
   );

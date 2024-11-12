@@ -46,10 +46,17 @@ export default function Menu({
 
   const CountRedeemed = async () => {
     try {
-      const q = query(
-        collection(db, "Redeemed"),
-        where("family", "==", userData.email)
-      );
+      const q =
+        userData.currentRole === "parent"
+          ? query(
+              collection(db, "Redeemed"),
+              where("family", "==", userData.email)
+            )
+          : query(
+              collection(db, "Redeemed"),
+              where("family", "==", userData.email),
+              where("kidName", "==", userData.currentUser)
+            );
       const querySnapshot = await getDocs(q);
       const redeemedCount = querySnapshot.docs.length;
 
