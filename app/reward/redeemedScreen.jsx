@@ -44,7 +44,11 @@ export default function RedeemedScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.WHITE }}>
       <View style={styles.container}>
-        <Kids onSelect={OnSelectedKid} selectedKid={selectedKid} />
+        <Kids
+          onSelect={OnSelectedKid}
+          selectedKid={selectedKid}
+          showPoint={true}
+        />
         <Redeemed selectedKid={selectedKid} />
       </View>
     </SafeAreaView>

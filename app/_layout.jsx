@@ -3,6 +3,7 @@ import { useFonts } from "expo-font";
 import { useState } from "react";
 import { SignUpContext } from "../contexts/SignUpContext";
 import { UserContext } from "../contexts/UserContext";
+import { ChoreContext } from "../contexts/ChoreContext";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function RootLayout() {
@@ -16,14 +17,17 @@ export default function RootLayout() {
 
   const [signUpData, setSignUpData] = useState({});
   const [userData, setUserData] = useState({});
+  const [choreData, setChoreData] = useState({});
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SignUpContext.Provider value={{ signUpData, setSignUpData }}>
         <UserContext.Provider value={{ userData, setUserData }}>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(tabs)" />
-          </Stack>
+          <ChoreContext.Provider value={{ choreData, setChoreData }}>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(tabs)" />
+            </Stack>
+          </ChoreContext.Provider>
         </UserContext.Provider>
       </SignUpContext.Provider>
     </GestureHandlerRootView>

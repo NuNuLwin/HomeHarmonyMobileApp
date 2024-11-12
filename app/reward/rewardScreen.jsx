@@ -71,7 +71,11 @@ export default function RewardScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.WHITE }}>
       <View style={styles.container}>
-        <Kids onSelect={OnSelectedKid} selectedKid={selectedKid} />
+        <Kids
+          onSelect={OnSelectedKid}
+          selectedKid={selectedKid}
+          showPoint={true}
+        />
         <Rewards selectedKid={selectedKid} />
       </View>
 

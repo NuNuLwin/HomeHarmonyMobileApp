@@ -4,16 +4,14 @@ import { UserContext } from "../../contexts/UserContext";
 import Colors from "./../../constants/Colors";
 import FamilyMember from "../family/FamilyMember";
 
-export default function kids({ onSelect, selectedKid }) {
+export default function kids({ onSelect, selectedKid, showPoint }) {
   const { userData, setUserData } = useContext(UserContext);
-
-  console.log("=== kids = selectedKid ===", selectedKid);
 
   const selectProfile = (profile) => {
     onSelect(profile);
   };
   return (
-    <ScrollView horizontal={true} style={{ height: 150 }}>
+    <ScrollView horizontal={true}>
       <View style={styles.container}>
         {userData?.currentRole === "parent"
           ? userData?.kids?.map((kid, index) => (
@@ -22,7 +20,7 @@ export default function kids({ onSelect, selectedKid }) {
                 member={kid}
                 onSelect={selectProfile}
                 isSelected={selectedKid ? selectedKid.name === kid.name : false}
-                showPoint={true}
+                showPoint={showPoint}
               />
             ))
           : userData?.currentRole === "kid" &&
