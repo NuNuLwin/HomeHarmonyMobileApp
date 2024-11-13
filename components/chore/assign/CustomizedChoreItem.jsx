@@ -1,15 +1,13 @@
 import { View, Text, StyleSheet, Image } from "react-native";
 import React from "react";
+import Colors from "../../../constants/Colors";
 
-export default function RecommendedChoreItem({ chore }) {
+export default function CustomizedChoreItem({ chore }) {
   return (
     <View style={styles.card}>
       <Image
-        source={{ uri: chore.image }}
         style={styles.img}
-        onError={(error) =>
-          console.log("Image load error:", error.nativeEvent.error)
-        }
+        source={require("./../../../assets/images/to-do-list.png")}
       />
       <View style={styles.infoContainer}>
         <Text style={[styles.text, { fontSize: 16 }]}>{chore.name}</Text>
@@ -58,24 +56,20 @@ const styles = StyleSheet.create({
     marginTop: 5,
     gap: 5,
   },
-  point: {
-    backgroundColor: "#F49B9B",
-    borderRadius: 20,
-    borderColor: "#E26868",
-    borderWidth: 1,
-    paddingHorizontal: 10,
-  },
   btnContainer: {
     justifyContent: "flex-end",
     alignItems: "flex-end",
   },
   btn: {
-    backgroundColor: "#92D6FA",
-    borderColor: "#44BEFF",
+    backgroundColor: Colors.PINK,
+    borderColor: Colors.PINK,
     borderWidth: 1,
     borderRadius: 20,
     padding: 5,
     paddingHorizontal: 10,
   },
-  text: { fontFamily: "outfit-regular", fontSize: 14 },
+  text: {
+    fontFamily: "outfit-regular",
+    fontSize: 14,
+  },
 });
