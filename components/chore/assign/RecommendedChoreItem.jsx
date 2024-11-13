@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, Image } from "react-native";
 import React from "react";
+import Colors from "../../../constants/Colors";
 
 export default function RecommendedChoreItem({ chore }) {
   return (
@@ -18,7 +19,9 @@ export default function RecommendedChoreItem({ chore }) {
             source={require("./../../../assets/images/coin.png")}
             style={styles.img1}
           />
-          <Text style={styles.text}>{chore.point} pts</Text>
+          <Text style={[styles.text, { color: Colors.GREY }]}>
+            {chore.point} pts
+          </Text>
         </View>
       </View>
 

@@ -140,6 +140,6 @@ const styles = StyleSheet.create({
   text: { fontFamily: "outfit-light", fontSize: 18, color: Colors.GREY },
   text_wrapper: { padding: 30, alignItems: "center" },
   footer: {
-    // marginBottom: 20,
+    marginBottom: 20,
   },
 });

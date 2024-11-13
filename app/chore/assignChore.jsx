@@ -71,10 +71,12 @@ export default function TabViewExample() {
         </View>
       </View>
       <TabView
+        // swipeEnabled={false}
         navigationState={{ index, routes }}
         renderScene={renderScene}
         onIndexChange={setIndex}
         initialLayout={{ width: layout.width }}
+        // tabBarPosition="bottom"
       />
     </SafeAreaView>
   );
