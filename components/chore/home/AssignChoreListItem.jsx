@@ -6,7 +6,14 @@ import { TouchableOpacity } from "react-native";
 export default function AssignChoreListItem({ chore }) {
   return (
     <View style={styles.card}>
-      <Image source={{ uri: chore.image }} style={styles.img} />
+      {chore.image ? (
+        <Image source={{ uri: chore.image }} style={styles.img} />
+      ) : (
+        <Image
+          style={styles.img}
+          source={require("./../../../assets/images/to-do-list.png")}
+        />
+      )}
       <View style={styles.infoContainer}>
         <Text style={[styles.text, { fontSize: 16 }]}>{chore.name}</Text>
         <View style={styles.point_container}>

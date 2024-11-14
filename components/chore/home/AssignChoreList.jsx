@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { View, Text, FlatList } from "react-native";
+import { View, Text, FlatList, StyleSheet } from "react-native";
 import Category from "./Category";
 import {
   collection,
@@ -65,6 +65,7 @@ export default function AssignChoreList() {
       setLoader(false);
     }
   };
+  const renderSeparator = () => <View style={styles.separator} />;
 
   return (
     <View>
@@ -73,6 +74,9 @@ export default function AssignChoreList() {
       <Category category={(value) => GetAssignChoreList(value)} />
       <FlatList
         data={assignedChoreList}
+        refreshing={loader}
+        // onRefresh={GetAssignChoreList("Pending")}
+        ItemSeparatorComponent={renderSeparator}
         renderItem={({ item, index }) => (
           <AssignChoreListItem chore={item.chore} />
         )}
@@ -80,3 +84,9 @@ export default function AssignChoreList() {
     </View>
   );
 }
+const styles = StyleSheet.create({
+  separator: {
+    height: 1,
+    backgroundColor: "#ddd",
+  },
+});

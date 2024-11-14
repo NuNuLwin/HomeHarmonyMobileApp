@@ -6,7 +6,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import Colors from "../../../constants/Colors";
 import { router, useRouter } from "expo-router";
 
-export default function Menu({ menu }) {
+export default function Menu() {
   const router = useRouter();
   const [selectedMenu, setSelectedMenu] = "Approval";
 
@@ -14,16 +14,14 @@ export default function Menu({ menu }) {
     router.push({ pathname: "/chore/assignChore" });
   };
 
+  const handleApprovalMenuClick = () => {};
+
   const handleCompletedMenuClick = () => {};
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.pending_box}
-        // onPress={handlePendingMenuClick}
-        onPress={() => {
-          setSelectedMenu("Pending");
-          menu("Pending");
-        }}
+        onPress={handlePendingMenuClick}
       >
         <View>
           <Text>Assign/</Text>
@@ -40,7 +38,6 @@ export default function Menu({ menu }) {
         style={styles.approval_box}
         onPress={() => {
           setSelectedMenu("Approval");
-          menu("Approval");
         }}
       >
         <Text>Approve</Text>
@@ -57,10 +54,7 @@ export default function Menu({ menu }) {
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.completed_box}
-        onPress={() => {
-          setSelectedMenu("Completed");
-          menu("Completed");
-        }}
+        onPress={handleCompletedMenuClick}
       >
         <Text>Completed</Text>
         {/* <Ionicons
