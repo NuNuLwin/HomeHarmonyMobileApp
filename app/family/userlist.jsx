@@ -6,14 +6,18 @@ import { UserContext } from "../../contexts/UserContext";
 import { useRouter } from "expo-router";
 import HeaderLogo from "../../components/common/headerLogo";
 import FamilyMember from "../../components/family/FamilyMember";
+import Colors from "../../constants/Colors";
 
 export default function Userlist() {
   const { userData, setUserData } = useContext(UserContext);
-  const [family, setFamily] = useState({});
   const router = useRouter();
 
   const selectProfile = (profile) => {
-    setUserData(profile);
+    setUserData((prevData) => ({
+      ...prevData,
+      currentUser: profile.name,
+      currentRole: profile.role,
+    }));
     router.replace("/chore");
   };
 
@@ -32,20 +36,31 @@ export default function Userlist() {
     const querySnapshot = await getDocs(q);
 
     querySnapshot.forEach((doc) => {
-      setFamily(doc.data());
+      setUserData(doc.data());
     });
   };
   return (
-    <SafeAreaView style={styles.container}>
-      <HeaderLogo />
-      <Text style={styles.title}>Who are you?</Text>
-      <View style={styles.body_wrapper}>
-        {family?.parents?.map((parent, index) => (
-          <FamilyMember key={index} member={parent} onSelect={selectProfile} />
-        ))}
-        {family?.kids?.map((kid, index) => (
-          <FamilyMember key={index} member={kid} onSelect={selectProfile} />
-        ))}
+    <SafeAreaView>
+      <View style={styles.container}>
+        <HeaderLogo />
+        <Text style={styles.title}>Who are you?</Text>
+        <View style={styles.body_wrapper}>
+          {userData?.parents?.map((parent, index) => (
+            <FamilyMember
+              key={index}
+              member={{ ...parent, role: "parent" }}
+              onSelect={selectProfile}
+              showPoint={false}
+            />
+          ))}
+          {userData?.kids?.map((kid, index) => (
+            <FamilyMember
+              key={index}
+              member={{ ...kid, role: "kid" }}
+              onSelect={selectProfile}
+            />
+          ))}
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -53,7 +68,6 @@ export default function Userlist() {
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    justifyContent: "center",
     padding: 40,
   },
 
@@ -63,7 +77,7 @@ const styles = StyleSheet.create({
     fontFamily: "outfit-regular",
   },
   body_wrapper: {
-    marginTop: 20,
+    flexWrap: "wrap",
     justifyContent: "center",
     alignItems: "center",
     flexDirection: "row",

@@ -28,11 +28,6 @@ export default function CreateAccount() {
     }));
   }, [email, password]);
 
-  useEffect(() => {
-    console.log(signUpData);
-  }),
-    [signUpData];
-
   return (
     <View>
       <Text style={styles.title}>Create new account for your Family</Text>

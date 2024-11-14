@@ -4,7 +4,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import React, { useContext, useEffect, useState, useRef } from "react";
 
@@ -13,18 +13,22 @@ import { SignUpContext } from "../../contexts/SignUpContext.jsx";
 // firebase
 import { addDoc, collection, onSnapshot } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { db, storage } from "../../config/FirebaseConfig.js"
+import { db, storage } from "../../config/FirebaseConfig.js";
 
 // Image
 import * as ImagePicker from "expo-image-picker";
 
 // components
 import DateInput from "./DateInput";
-import { Uploading } from "../common/Uploading.jsx"
+import { Uploading } from "../common/Uploading.jsx";
 
 // constants
 import Colors from "../../constants/Colors";
 import Folders from "@/constants/Folders";
+
+// icons
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import Entypo from "@expo/vector-icons/Entypo";
 
 export default function CreateParentsProfile(props) {
   const [name, setName] = useState();
@@ -101,19 +105,22 @@ export default function CreateParentsProfile(props) {
     });
 
     if (!result.canceled) {
-      console.log('img:', result.assets[0].uri)
+      console.log("img:", result.assets[0].uri);
       setImage(result.assets[0].uri);
       setShowModal(true);
       const url = await uploadImage(result.assets[0].uri, "image");
       setImage(url);
       setShowModal(false);
     }
-  }
+  };
 
   async function doUploadImage(uri, uploadProgress) {
     const response = await fetch(uri);
     const blob = await response.blob();
-    const storageRef = ref(storage, `${PROFILE_FOLDER}/` + new Date().getTime());
+    const storageRef = ref(
+      storage,
+      `${PROFILE_FOLDER}/` + new Date().getTime()
+    );
     const task = uploadBytesResumable(storageRef, blob);
 
     task.on(
@@ -127,21 +134,21 @@ export default function CreateParentsProfile(props) {
       },
       (error) => {
         // handle error
-        console.log('File upload error:', error);
+        console.log("File upload error:", error);
       }
-    )
+    );
     await task;
-    return await getDownloadURL(task.snapshot.ref)
+    return await getDownloadURL(task.snapshot.ref);
   }
 
   const uploadImage = async (uri) => {
     let file_url = await doUploadImage(uri, true);
-    
+
     // clean up
     setProgress(0);
 
-    return file_url
-  }
+    return file_url;
+  };
 
   return (
     <View>
@@ -153,17 +160,37 @@ export default function CreateParentsProfile(props) {
       )}
 
       {/* Image */}
-      <TouchableOpacity
-        style={styles.img_wrapper}
-        onPress={pickImage}
-      >
-        {image && <Image
-          source={{
-            uri: image
+      <View style={image ? styles.img_wrapper : styles.img_wrapper_default}>
+        {image ? (
+          <Image
+            source={{
+              uri: image,
+            }}
+            style={styles.profile_img}
+          />
+        ) : (
+          <FontAwesome5 name="user" size={40} color="grey" />
+        )}
+        <TouchableOpacity
+          style={{
+            position: "absolute",
+            right: 0,
+            bottom: 0,
+            width: 25,
+            height: 25,
+            borderRadius: 50,
+            borderWidth: 1,
+            borderColor: Colors.GREY,
+            backgroundColor: Colors.LIGHT_GREY,
+            alignSelf: "center",
+            justifyContent: "center",
+            alignItems: "center",
           }}
-          style={styles.profile_img}
-        />}
-      </TouchableOpacity>
+          onPress={pickImage}
+        >
+          <Entypo name="edit" size={13} color="black" />
+        </TouchableOpacity>
+      </View>
 
       {showModal === true && <Uploading image={image} progress={progress} />}
 
@@ -278,9 +305,21 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 50,
     borderWidth: 1,
-    borderColor: Colors.GREY,
-    backgroundColor: Colors.LIGHT_GREY,
+    borderColor: Colors.LIGHT_GREY,
+    backgroundColor: Colors.WHITE,
     alignSelf: "center",
+  },
+  img_wrapper_default: {
+    width: 80,
+    height: 80,
+    borderRadius: 50,
+    borderWidth: 1,
+    borderColor: Colors.LIGHT_GREY,
+    backgroundColor: Colors.WHITE,
+    padding: 10,
+    alignSelf: "center",
+    justifyContent: "center",
+    alignItems: "center",
   },
   profile_img: {
     flex: 1,

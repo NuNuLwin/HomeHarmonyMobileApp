@@ -1,23 +1,23 @@
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  SafeAreaView,
-  ImageBackground,
-} from "react-native";
-import React from "react";
-import Colors from "../../constants/Colors";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { auth } from "./../../config/FirebaseConfig";
-import { TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, ImageBackground } from "react-native";
+import React, { useContext } from "react";
 import { useRouter } from "expo-router";
-
+import Colors from "../../constants/Colors";
 //components
-import Members from "./../../components/family/members";
+import FamilyMember from "../../components/family/FamilyMember";
+//context
+import { UserContext } from "../../contexts/UserContext";
 
 export default function family() {
   const router = useRouter();
+  const { userData, setUserData } = useContext(UserContext);
+
+  const selectProfile = (profile) => {
+    setUserData((prevData) => ({
+      ...prevData,
+      selectedProfile: profile,
+    }));
+    router.push({ pathname: "/family/profile" });
+  };
 
   return (
     <View>
@@ -25,17 +25,25 @@ export default function family() {
         style={styles.img}
         source={require("./../../assets/images/family.jpg")}
       >
-        <TouchableOpacity
-          style={styles.profileCircle}
-          onPress={() => router.push({ pathname: "/family/profile" })}
-        >
-          <Ionicons name="person" size={24} color="black" />
-        </TouchableOpacity>
+        <Text style={styles.title}>
+          Welcome From {userData.currentUser}'s Family!
+        </Text>
       </ImageBackground>
 
-      <Members />
-
-      {/* <Text>Welcome to {username}</Text> */}
+      <View style={styles.member_box}>
+        <View style={styles.body_wrapper}>
+          {userData?.parents?.map((parent, index) => (
+            <FamilyMember
+              key={index}
+              member={parent}
+              onSelect={selectProfile}
+            />
+          ))}
+          {userData?.kids?.map((kid, index) => (
+            <FamilyMember key={index} member={kid} onSelect={selectProfile} />
+          ))}
+        </View>
+      </View>
     </View>
   );
 }
@@ -44,18 +52,29 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 450,
   },
-
-  profileCircle: {
-    borderWidth: 1,
-    borderRadius: 40,
+  title: {
     position: "absolute",
-    top: 50,
+    top: 100,
     left: 40,
-    width: 50,
-    height: 50,
+    fontSize: 20,
+    fontFamily: "outfit-bold",
+  },
+
+  member_box: {
+    flexWrap: "wrap",
+    backgroundColor: Colors.WHITE,
+    marginTop: -30,
+    height: "100%",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    padding: 20,
+  },
+
+  body_wrapper: {
+    marginTop: 20,
     justifyContent: "center",
     alignItems: "center",
-    borderColor: Colors.GREY,
-    backgroundColor: Colors.WHITE,
+    flexDirection: "row",
+    flexWrap: "wrap",
   },
 });
