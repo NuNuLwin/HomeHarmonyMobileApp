@@ -1,55 +1,39 @@
-import { View, Text, Image, TouchableOpacity } from "react-native";
-import React from "react";
-import { StyleSheet } from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import React, { useState } from "react";
+import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import Colors from "../../../constants/Colors";
-import { router, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 
-export default function Menu({ menu }) {
+export default function Category({ category }) {
   const router = useRouter();
-  const [selectedMenu, setSelectedMenu] = "Approval";
+  const [selectedCategory, setSelectedCategory] = useState();
 
-  const handlePendingMenuClick = () => {
+  const handlePendingClick = () => {
     router.push({ pathname: "/chore/assignChore" });
   };
 
-  const handleCompletedMenuClick = () => {};
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.pending_box}
-        // onPress={handlePendingMenuClick}
         onPress={() => {
-          setSelectedMenu("Pending");
-          menu("Pending");
+          setSelectedCategory("Pending");
+          category("Pending");
         }}
       >
         <View>
           <Text>Assign/</Text>
           <Text>Pending</Text>
         </View>
-        <MaterialIcons
-          name="pending-actions"
-          size={25}
-          color={"#802828"}
-          style={styles.icon}
-        />
+        <MaterialIcons name="pending-actions" size={25} color={"#802828"} />
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.approval_box}
         onPress={() => {
-          setSelectedMenu("Approval");
-          menu("Approval");
+          setSelectedCategory("Approval");
+          category("Approval");
         }}
       >
         <Text>Approve</Text>
-        {/* <MaterialIcons
-          name="approval"
-          size={25}
-          color={"#1676D6"}
-          style={styles.icon}
-        /> */}
         <Image
           style={styles.img}
           source={require("./../../../assets/images/approval.png")}
@@ -58,17 +42,11 @@ export default function Menu({ menu }) {
       <TouchableOpacity
         style={styles.completed_box}
         onPress={() => {
-          setSelectedMenu("Completed");
-          menu("Completed");
+          setSelectedCategory("Completed");
+          category("Completed");
         }}
       >
         <Text>Completed</Text>
-        {/* <Ionicons
-          name="checkmark-done-circle"
-          size={25}
-          color={"#3F9233"}
-          style={styles.icon}
-        /> */}
         <Image
           style={[styles.img, { width: 20, height: 25 }]}
           source={require("./../../../assets/images/completed.png")}

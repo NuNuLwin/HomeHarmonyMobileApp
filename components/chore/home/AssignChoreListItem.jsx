@@ -3,16 +3,10 @@ import React from "react";
 import Colors from "../../../constants/Colors";
 import { TouchableOpacity } from "react-native";
 
-export default function CustomizedChoreItem({ chore, onAssign }) {
-  const handleAssignChore = () => {
-    onAssign(chore.id, chore);
-  };
+export default function AssignChoreListItem({ chore }) {
   return (
     <View style={styles.card}>
-      <Image
-        style={styles.img}
-        source={require("./../../../assets/images/to-do-list.png")}
-      />
+      <Image source={{ uri: chore.image }} style={styles.img} />
       <View style={styles.infoContainer}>
         <Text style={[styles.text, { fontSize: 16 }]}>{chore.name}</Text>
         <View style={styles.point_container}>
@@ -25,16 +19,9 @@ export default function CustomizedChoreItem({ chore, onAssign }) {
           </Text>
         </View>
       </View>
-
-      <TouchableOpacity style={styles.btnContainer} onPress={handleAssignChore}>
-        <View style={styles.btn}>
-          <Text style={styles.text}>Add Chore</Text>
-        </View>
-      </TouchableOpacity>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   card: {
     gap: 10,

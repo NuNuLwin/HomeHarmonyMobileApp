@@ -44,7 +44,11 @@ export default function CustomizedChores({ selectedKid }) {
         orderBy("createdAt", "desc")
       );
       const querySnapshot = await getDocs(q);
-      const choresList = querySnapshot.docs.map((doc) => doc.data());
+
+      const choresList = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
 
       setCustomChore(choresList); // Initial load from database
       setLoader(false);
@@ -62,7 +66,6 @@ export default function CustomizedChores({ selectedKid }) {
   };
 
   const handleSave = async (choreName, points) => {
-    console.log(choreName, points);
     setIsLoading(true);
 
     try {
@@ -85,6 +88,30 @@ export default function CustomizedChores({ selectedKid }) {
     }
   };
 
+  const handleAssign = async (docId, chore) => {
+    console.log("Assigning chore:", chore);
+    console.log("Chore document ID:", docId);
+    try {
+      await addDoc(collection(db, "AssignChores"), {
+        family: userData.email,
+        customChoreId: chore.id,
+        kidName: selectedKid.name,
+        status: "Pending",
+        createdby: userData.currentUser,
+        createdAt: new Date(),
+      });
+
+      Alert.alert(
+        `Assigned ${chore.name} to ${selectedKid.name} successfully!`
+      );
+    } catch (error) {
+      console.error("Error saving assign custom chore: ", error);
+      Alert.alert("Error saving assign custom chore. Please try again.");
+    } finally {
+      GetCustomChores();
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View>
@@ -102,7 +129,11 @@ export default function CustomizedChores({ selectedKid }) {
             onRefresh={GetCustomChores}
             ItemSeparatorComponent={renderSeparator}
             renderItem={({ item }) => (
-              <CustomizedChoreItem chore={item} selectedKid={selectedKid} />
+              <CustomizedChoreItem
+                chore={item}
+                selectedKid={selectedKid}
+                onAssign={handleAssign}
+              />
             )}
             ListEmptyComponent={() => (
               <View style={styles.text_wrapper}>

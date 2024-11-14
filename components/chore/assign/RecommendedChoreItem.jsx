@@ -1,8 +1,12 @@
 import { View, Text, StyleSheet, Image } from "react-native";
 import React from "react";
 import Colors from "../../../constants/Colors";
+import { TouchableOpacity } from "react-native";
 
-export default function RecommendedChoreItem({ chore }) {
+export default function RecommendedChoreItem({ chore, onAssign }) {
+  const handleAssignChore = () => {
+    onAssign(chore.id, chore);
+  };
   return (
     <View style={styles.card}>
       <Image
@@ -25,11 +29,11 @@ export default function RecommendedChoreItem({ chore }) {
         </View>
       </View>
 
-      <View style={styles.btnContainer}>
+      <TouchableOpacity style={styles.btnContainer} onPress={handleAssignChore}>
         <View style={styles.btn}>
           <Text style={styles.text}>Add Chore</Text>
         </View>
-      </View>
+      </TouchableOpacity>
     </View>
   );
 }

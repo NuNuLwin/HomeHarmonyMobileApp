@@ -1,17 +1,19 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Alert } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import RecommendedChoreItem from "./RecommendedChoreItem";
 import { FlatList } from "react-native";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../../config/FirebaseConfig";
 import { ChoreContext } from "../../../contexts/ChoreContext";
 import { ActivityIndicator } from "react-native";
 import Colors from "../../../constants/Colors";
+import { UserContext } from "../../../contexts/UserContext";
 
 export default function RecommendedChores({ selectedKid }) {
   const { setChoreData } = useContext(ChoreContext);
   const [recommendedChore, setRecommendedChore] = useState(null);
   const [loader, setLoader] = useState(false);
+  const { userData } = useContext(UserContext);
 
   useEffect(() => {
     if (selectedKid) {
@@ -28,7 +30,6 @@ export default function RecommendedChores({ selectedKid }) {
         maxAge: recommendedChore?.maxAge,
       };
     });
-    console.log("Updated recommendedChore:", recommendedChore);
   }, [recommendedChore]);
 
   const GetRecommendedChoresByAge = async () => {
@@ -38,25 +39,56 @@ export default function RecommendedChores({ selectedKid }) {
       console.log("Selected Kid's Age:", age);
 
       const q = query(
-        collection(db, "RecommendedChores"),
+        collection(db, "RecommendChores"),
         where("minAge", "<=", age),
         where("maxAge", ">=", age)
       );
-
       const querySnapshot = await getDocs(q);
 
-      if (!querySnapshot.empty) {
-        const firstChore = querySnapshot.docs[0].data();
-        setRecommendedChore(firstChore);
-      } else {
-        setRecommendedChore(null);
-      }
+      const choresList = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setRecommendedChore(choresList); // Initial load from database
+      setLoader(false);
     } catch (error) {
       console.error("Error fetching chores: ", error);
     } finally {
       setLoader(false);
     }
   };
+
+  // const GetRecommendedChoresByAge = async () => {
+  //   setLoader(true);
+  //   try {
+  //     const age = calculateAge(selectedKid.dob);
+  //     console.log("Selected Kid's Age:", age);
+
+  //     const q = query(
+  //       collection(db, "RecommendedChores"),
+  //       where("minAge", "<=", age),
+  //       where("maxAge", ">=", age)
+  //     );
+
+  //     const querySnapshot = await getDocs(q);
+
+  //     if (!querySnapshot.empty) {
+  //       const doc = querySnapshot.docs[0];
+  //       const choreData = {
+  //         id: doc.id,
+  //         ...doc.data(),
+  //       };
+  //       setRecommendedChore(choreData);
+  //     } else {
+  //       setRecommendedChore(null);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching chores: ", error);
+  //   } finally {
+  //     setLoader(false);
+  //   }
+  // };
 
   const renderSeparator = () => <View style={styles.separator} />;
 
@@ -76,6 +108,30 @@ export default function RecommendedChores({ selectedKid }) {
     return age;
   };
 
+  const handleAssign = async (docId, chore) => {
+    console.log("Assigning chore:", chore);
+    console.log("Chore document ID:", docId);
+    try {
+      await addDoc(collection(db, "AssignChores"), {
+        family: userData.email,
+        recommendChoreId: chore.id,
+        kidName: selectedKid.name,
+        status: "Pending",
+        createdby: userData.currentUser,
+        createdAt: new Date(),
+      });
+
+      Alert.alert(
+        `Assigned ${chore.name} to ${selectedKid.name} successfully!`
+      );
+    } catch (error) {
+      console.error("Error saving assign custom chore: ", error);
+      Alert.alert("Error saving assign custom chore. Please try again.");
+    } finally {
+      GetRecommendedChoresByAge();
+    }
+  };
+
   return (
     <View>
       {loader ? (
@@ -86,13 +142,17 @@ export default function RecommendedChores({ selectedKid }) {
         />
       ) : (
         <FlatList
-          data={recommendedChore?.chores || []}
+          data={recommendedChore}
           keyExtractor={(item, index) => index.toString()}
           refreshing={loader}
           onRefresh={GetRecommendedChoresByAge}
           ItemSeparatorComponent={renderSeparator}
           renderItem={({ item }) => (
-            <RecommendedChoreItem chore={item} selectedKid={selectedKid} />
+            <RecommendedChoreItem
+              chore={item}
+              selectedKid={selectedKid}
+              onAssign={handleAssign}
+            />
           )}
           ListEmptyComponent={() => (
             <View style={styles.text_wrapper}>

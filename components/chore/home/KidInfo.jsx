@@ -19,9 +19,9 @@ export default function KidInfo({ kid }) {
           }
         />
 
-        <View style={styles.point_box}>
+        {/* <View style={styles.point_box}>
           <Text style={styles.point_text}>{kid.point}</Text>
-        </View>
+        </View> */}
 
         <Text style={styles.text}>{kid.name}</Text>
       </View>

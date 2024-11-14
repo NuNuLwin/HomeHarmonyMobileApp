@@ -9,7 +9,7 @@ import RecommendedChores from "../../components/chore/assign/RecommendedChores";
 import { useNavigation } from "expo-router";
 import CustomizedChores from "../../components/chore/assign/CustomizedChores";
 
-export default function TabViewExample() {
+export default function AssignChore() {
   const layout = useWindowDimensions();
   const [index, setIndex] = useState(0);
   const [selectedKid, setSelectedKid] = useState();

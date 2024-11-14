@@ -3,7 +3,6 @@ import React, { useContext } from "react";
 import { Image } from "react-native";
 import KidInfo from "./KidInfo";
 import { UserContext } from "../../../contexts/UserContext";
-import Menu from "./Menu";
 
 export default function Header() {
   const { userData } = useContext(UserContext);
@@ -14,8 +13,6 @@ export default function Header() {
           <KidInfo key={index} kid={kid} />
         ))}
       </ScrollView>
-
-      <Menu />
     </View>
   );
 }
@@ -23,6 +20,6 @@ const styles = StyleSheet.create({
   container: {
     gap: 15,
     padding: 10,
-    marginTop: -30,
+    // marginTop: -30,
   },
 });
