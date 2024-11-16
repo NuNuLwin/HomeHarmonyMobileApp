@@ -2,7 +2,13 @@ import { View, Text, Image, StyleSheet } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 
 // firebase
-import { collection, onSnapshot, query, where, getDocs } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { db } from "../../../config/FirebaseConfig";
 
 // icons
@@ -14,7 +20,6 @@ import Colors from "../../../constants/Colors";
 import Keys from "../../../constants/Keys";
 
 export default function KidInfo({ kid, index, currentUser, family }) {
-
   const [chores, setChores] = useState([]);
   const [pendingCount, setPendingCount] = useState(0);
   const [inProgressCount, setInProgressCount] = useState(0);
@@ -45,12 +50,12 @@ export default function KidInfo({ kid, index, currentUser, family }) {
 
   useEffect(() => {
     if (!currentUser) return;
-    
+
     // GetChoresByKid();
     const _query = query(
       collection(db, "AssignChores"),
       where("family", "==", family),
-      where("kidName", "==", kid.name),
+      where("kidName", "==", kid.name)
     );
 
     const unsubscribe = onSnapshot(_query, (snapshot) => {
@@ -82,9 +87,13 @@ export default function KidInfo({ kid, index, currentUser, family }) {
   }, [currentUser]);
 
   return (
-    <View style={[styles.kid_info_box, {width: currentUser === kid.name ? "100%" : "auto"}]}>
+    <View
+      style={[
+        styles.kid_info_box,
+        { width: currentUser === kid.name ? "100%" : "auto" },
+      ]}
+    >
       <View style={styles.icon_wrapper_parent2}>
-        
         <View>
           {currentUser === kid.name ? (
             <Text style={styles.title}>Hello, {kid.name}!</Text>
@@ -94,7 +103,6 @@ export default function KidInfo({ kid, index, currentUser, family }) {
         </View>
 
         <View style={styles.icon_wrapper_parent}>
-
           <View style={styles.img_wrapper}>
             <Image
               source={{ uri: kid.image }}
@@ -113,22 +121,27 @@ export default function KidInfo({ kid, index, currentUser, family }) {
 
           <View style={styles.status_wrapper}>
             <View style={styles.icon_wrapper}>
-              <Text style={styles.text2}>{chores.filter(x => x.status === Keys.PENDING).length}</Text>
+              <Text style={styles.text2}>
+                {chores.filter((x) => x.status === Keys.PENDING).length}
+              </Text>
               <Text style={styles.text2}>{Keys.PENDING}</Text>
             </View>
 
             <View style={styles.icon_wrapper}>
-              <Text style={styles.text2}>{chores.filter(x => x.status === Keys.IN_PROGRESS).length}</Text>
+              <Text style={styles.text2}>
+                {chores.filter((x) => x.status === Keys.IN_PROGRESS).length}
+              </Text>
               <Text style={styles.text2}>{Keys.IN_PROGRESS}</Text>
             </View>
 
             <View style={styles.icon_wrapper}>
-              <Text style={styles.text2}>{chores.filter(x => x.status === Keys.COMPLETED).length}</Text>
+              <Text style={styles.text2}>
+                {chores.filter((x) => x.status === Keys.COMPLETED).length}
+              </Text>
               <Text style={styles.text2}>{Keys.COMPLETED}</Text>
             </View>
           </View>
         </View>
-
       </View>
     </View>
   );
@@ -148,7 +161,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     alignSelf: "center",
     justifyContent: "center",
-    flexGrow: 1
+    flexGrow: 1,
   },
   kid_info_box: {
     padding: 5,
@@ -176,7 +189,7 @@ const styles = StyleSheet.create({
   status_wrapper: {
     flexGrow: 1,
     flexDirection: "row",
-    justifyContent: "space-around"
+    justifyContent: "space-around",
   },
   icon_wrapper: {
     alignItems: "center",
@@ -216,5 +229,5 @@ const styles = StyleSheet.create({
     fontFamily: "outfit-regular",
     fontSize: 20,
     fontWeight: 700,
-  }
+  },
 });

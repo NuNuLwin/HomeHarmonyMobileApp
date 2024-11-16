@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { 
+import {
   Animated,
   Image,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 
@@ -17,21 +18,30 @@ import { RectButton, Swipeable } from "react-native-gesture-handler";
 // constants
 import Colors from "../../../constants/Colors";
 import Keys from "../../../constants/Keys";
+import { useRouter } from "expo-router";
 
-export default function AssignChoreListItem({ id, chore, currentUser, currentRole, status, handleRemoveItem }) {
+export default function AssignChoreListItem({
+  id,
+  chore,
+  currentUser,
+  currentRole,
+  status,
+  handleRemoveItem,
+}) {
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleChoreUpdate = async (to_delete) => {
     setLoading(true);
 
-    console.log('=== handleChoreUpdate ===', id);
-    
+    console.log("=== handleChoreUpdate ===", id);
+
     if (to_delete) {
       try {
         await deleteDoc(doc(db, "AssignChores", id));
         handleRemoveItem(id);
       } catch (error) {
-        console.log('Delete assigned chore status error:', error);
+        console.log("Delete assigned chore status error:", error);
       } finally {
         setLoading(false);
       }
@@ -44,43 +54,46 @@ export default function AssignChoreListItem({ id, chore, currentUser, currentRol
       } else if (status === Keys.IN_PROGRESS && currentRole === "parent") {
         new_status = Keys.COMPLETED;
       }
-  
+
       console.log("=== new status ===", new_status, id);
 
       if (!new_status) return;
-      
+
       try {
         await updateDoc(doc(db, "AssignChores", id), { status: new_status });
         handleRemoveItem(id);
       } catch (error) {
-        console.log('Update assigned chore status error:', error);
+        console.log("Update assigned chore status error:", error);
       } finally {
         setLoading(false);
       }
     }
-    
-  }
+  };
 
   const leftSwipeActions = (e, _chore) => {
-    if ((status === Keys.PENDING) || (status === Keys.IN_PROGRESS && currentRole === "parent"))
-    {
-    return <View style={{ width: 100, marginTop: 5 }}>
-      <Animated.View style={{ flex: 1, transform: [{ translateX: 0 }] }}>
-        <RectButton
-          onPress={() => handleChoreUpdate(false)}
-          style={[styles.rightAction, { backgroundColor: Colors.GREEN }]}
-        >
-          {loading ? (
-            <Text style={styles.actionText}>Updating</Text>
-          ) : (
-            <Text style={styles.actionText}>Complete</Text>
-          )}
-        </RectButton>
-      </Animated.View>
-    </View>
+    if (
+      status === Keys.PENDING ||
+      (status === Keys.IN_PROGRESS && currentRole === "parent")
+    ) {
+      return (
+        <View style={{ width: 100, marginTop: 5 }}>
+          <Animated.View style={{ flex: 1, transform: [{ translateX: 0 }] }}>
+            <RectButton
+              onPress={() => handleChoreUpdate(false)}
+              style={[styles.rightAction, { backgroundColor: Colors.GREEN }]}
+            >
+              {loading ? (
+                <Text style={styles.actionText}>Updating</Text>
+              ) : (
+                <Text style={styles.actionText}>Complete</Text>
+              )}
+            </RectButton>
+          </Animated.View>
+        </View>
+      );
     }
     return null;
-  }
+  };
 
   const rightSwipeActions = (e, _chore) => {
     if (currentRole === "parent") {
@@ -102,7 +115,12 @@ export default function AssignChoreListItem({ id, chore, currentUser, currentRol
       );
     }
     return null;
-  }
+  };
+
+  // event
+  const handleChoreDetailClick = () => {
+    router.push({ pathname: "/chore/choreDetail" });
+  };
 
   return (
     <Swipeable
@@ -111,8 +129,17 @@ export default function AssignChoreListItem({ id, chore, currentUser, currentRol
       leftThreshold={30}
       rightThreshold={40}
       friction={2}
-    > 
-      <View style={[styles.card, { backgroundColor: Colors.CHORE_COLORS[status.toUpperCase().replace('-', '_')]}]}>
+    >
+      <TouchableOpacity
+        onPress={handleChoreDetailClick}
+        style={[
+          styles.card,
+          {
+            backgroundColor:
+              Colors.CHORE_COLORS[status.toUpperCase().replace("-", "_")],
+          },
+        ]}
+      >
         <View style={styles.bar}></View>
         <View style={styles.mainContent}>
           {chore.image ? (
@@ -126,17 +153,22 @@ export default function AssignChoreListItem({ id, chore, currentUser, currentRol
           <View style={styles.infoContainer}>
             <Text style={[styles.text, { fontSize: 16 }]}>{chore.name}</Text>
             <View style={styles.point_container}>
-              <Image
-                source={require("./../../../assets/images/coin.png")}
-                style={styles.img1}
-              />
-              <Text style={[styles.text, { color: Colors.GREY }]}>
-                {chore.point} pts
-              </Text>
+              <View style={styles.left_box}>
+                <Text style={[styles.text, { color: Colors.GREY }]}>hi</Text>
+              </View>
+              <View style={styles.right_box}>
+                <Image
+                  source={require("./../../../assets/images/coin.png")}
+                  style={styles.img1}
+                />
+                <Text style={[styles.text, { color: Colors.GREY }]}>
+                  {chore.point} pts
+                </Text>
+              </View>
             </View>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     </Swipeable>
   );
 }
@@ -170,6 +202,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
     gap: 5,
   },
+
   btnContainer: {
     justifyContent: "flex-end",
     alignItems: "flex-end",
@@ -212,5 +245,14 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.WHITE,
     borderTopRightRadius: 10,
     borderBottomRightRadius: 10,
+  },
+  left_box: {
+    flex: 2,
+    alignItems: "flex-start",
+  },
+  right_box: {
+    flex: 1,
+    alignItems: "flex-end",
+    flexDirection: "row",
   },
 });
