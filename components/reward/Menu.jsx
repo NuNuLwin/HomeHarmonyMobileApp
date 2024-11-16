@@ -1,19 +1,35 @@
-import { View, Text, StyleSheet, Image, ActivityIndicator } from "react-native";
-import { useIsFocused } from "@react-navigation/native";
 import React, { useContext, useEffect, useState } from "react";
-import Colors from "../../constants/Colors";
-import { TouchableOpacity } from "react-native";
+import { 
+  ActivityIndicator,
+  Image,
+  StyleSheet, 
+  TouchableOpacity,
+  Text,
+  View,
+} from "react-native";
+import { useIsFocused } from "@react-navigation/native";
+
+// router
 import { useRouter } from "expo-router";
+
+// firebase
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../config/FirebaseConfig";
-import { UserContext } from "../../contexts/UserContext";
+
+// context
+import { useUserProvider } from "../../contexts/UserContext";
+
+// constants
+import Colors from "../../constants/Colors";
 
 export default function Menu({
   handleRewardMenuClick,
   handleRedeemedMenuClick,
+  currentUser,
+  currentRole,
 }) {
   const router = useRouter();
-  const { userData, setUserData } = useContext(UserContext);
+  const userData = useUserProvider();
   const [rewardCount, setRewardCount] = useState(0);
   const [redeemedCount, setRedeemedCount] = useState(0);
   const isFocused = useIsFocused();
@@ -21,11 +37,13 @@ export default function Menu({
   const [loadingRedeemed, setLoadingRedeemed] = useState(true);
 
   useEffect(() => {
-    setLoadingRewards(true);
-    setLoadingRedeemed(true);
-    CountRewards();
-    CountRedeemed();
-  }, [isFocused]);
+    if (userData && currentUser && currentRole){
+      setLoadingRewards(true);
+      setLoadingRedeemed(true);
+      CountRewards();
+      CountRedeemed();
+    }
+  }, [isFocused, userData, currentUser, currentRole]);
 
   const CountRewards = async () => {
     try {
@@ -47,7 +65,7 @@ export default function Menu({
   const CountRedeemed = async () => {
     try {
       const q =
-        userData.currentRole === "parent"
+        currentRole === "parent"
           ? query(
               collection(db, "Redeemed"),
               where("family", "==", userData.email)
@@ -55,7 +73,7 @@ export default function Menu({
           : query(
               collection(db, "Redeemed"),
               where("family", "==", userData.email),
-              where("kidName", "==", userData.currentUser)
+              where("kidName", "==", currentUser)
             );
       const querySnapshot = await getDocs(q);
       const redeemedCount = querySnapshot.docs.length;

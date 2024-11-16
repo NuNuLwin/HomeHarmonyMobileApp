@@ -48,17 +48,14 @@ const styles = StyleSheet.create({
     gap: 10,
     alignItems: "center",
     flexDirection: "row",
-    backgroundColor: Colors.WHITE,
+    backgroundColor: "#7F9AFD",
     borderRadius: 10,
     borderWidth: 1,
     borderColor: Colors.LIGHT_BLUE,
   },
   bar: {
-    width: "1%",
-    backgroundColor: "#7F9AFD",
-    height: "90%",
-    borderTopLeftRadius: 10,
-    borderBottomLeftRadius: 10,
+    width: 1,
+    height: "100%",
   },
 
   point_container: {
@@ -92,8 +89,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
     paddingLeft: 0,
-    width: "95%",
+    flex: 1,
     justifyContent: "space-between",
+    backgroundColor: Colors.WHITE,
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
   },
   detailsContainer: {
     flexDirection: "row",

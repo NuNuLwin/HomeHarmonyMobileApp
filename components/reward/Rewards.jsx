@@ -1,3 +1,4 @@
+import { useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,8 +7,8 @@ import {
   FlatList,
   Dimensions,
 } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
 
+// firestore
 import {
   collection,
   getDocs,
@@ -15,22 +16,26 @@ import {
   where,
   onSnapshot,
 } from "firebase/firestore";
-import { UserContext } from "../../contexts/UserContext";
 import { db } from "../../config/FirebaseConfig";
+
+// context
+import { useUserProvider } from "../../contexts/UserContext";
+
+// components
+import RewardItem from "./RewardItem";
+
+// constants
 import Colors from "../../constants/Colors";
 
-import RewardItem from "./RewardItem";
 
 const { height } = Dimensions.get("window");
 
-export default function Rewards({ selectedKid }) {
+export default function Rewards({ selectedKid, currentUser, currentRole }) {
+  const userData = useUserProvider();
   const [rewards, setRewards] = useState([]);
-  const { userData, setUserData } = useContext(UserContext);
   const [loader, setLoader] = useState(false);
 
   useEffect(() => {
-    setRewards([]);
-
     const _query = query(
       collection(db, "Rewards"),
       where("family", "==", userData.email),
@@ -48,7 +53,7 @@ export default function Rewards({ selectedKid }) {
       });
     });
     return () => unsubscribe();
-  }, []);
+  }, [selectedKid]);
 
   /**
    * Used to Get all rewards  from DB
@@ -98,6 +103,8 @@ export default function Rewards({ selectedKid }) {
                 reward={item}
                 selectedKid={selectedKid}
                 onDelete={handleDeleteReward}
+                currentRole={currentRole}
+                currentUser={currentUser}
               />
             )}
           />
@@ -108,7 +115,7 @@ export default function Rewards({ selectedKid }) {
             style={styles.img}
             source={require("./../../assets/images/money.png")}
           />
-          <Text style={styles.text}>No rewards available.</Text>
+          <Text style={[styles.text, { marginTop: 15 }]}>No rewards available.</Text>
         </View>
       )}
     </View>
@@ -125,8 +132,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     borderRadius: 10,
+    marginTop: "50%",
   },
-
   text: {
     fontFamily: "outfit-regular",
     fontSize: 20,

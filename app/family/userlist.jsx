@@ -1,43 +1,57 @@
-import { View, Text, Image, StyleSheet, SafeAreaView } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
-import { auth, db } from "../../config/FirebaseConfig";
-import { collection, getDocs, query, where } from "firebase/firestore";
-import { UserContext } from "../../contexts/UserContext";
+import { 
+  Alert,
+  StyleSheet, 
+  SafeAreaView,
+  Text, 
+  View,
+} from "react-native";
+
+// context
+import { useUserProvider } from "../../contexts/UserContext";
 import { useRouter } from "expo-router";
-import HeaderLogo from "../../components/common/headerLogo";
+
+// async storage
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+// components
 import FamilyMember from "../../components/family/FamilyMember";
-import Colors from "../../constants/Colors";
+import HeaderLogo from "../../components/common/headerLogo";
+
+// constants
+import Keys from "@/constants/Keys";
 
 export default function Userlist() {
-  const { userData, setUserData } = useContext(UserContext);
   const router = useRouter();
+  const UserData = useUserProvider();
+
+  // console.log('=== UserList ===', UserData);
 
   const selectProfile = (profile) => {
-    setUserData((prevData) => ({
-      ...prevData,
-      currentUser: profile.name,
-      currentRole: profile.role,
-    }));
-    router.replace("/chore");
-  };
+    Alert.alert('Confirm', `Are you sure you want to use the profile "${profile.name}"?`, [
+      {
+        text: 'Cancel',
+        onPress: () => {
+          console.log('Cancel Pressed');
+        },
+        style: 'cancel',
+      },
+      {text: 'OK', onPress: async () => {
+        console.log('OK Pressed');
+        
+        try {
+          await AsyncStorage.setItem(Keys.CURRENT_USER, profile.name);
+          await AsyncStorage.setItem(Keys.CURRENT_ROLE, profile.role);
 
-  useEffect(() => {
-    GetFamily();
-  }, []);
+          // const current_user = await AsyncStorage.getItem(Keys.CURRENT_USER);
+          // const current_role = await AsyncStorage.getItem(Keys.CURRENT_ROLE);
 
-  /**
-   * Used to Get family member List from DB
-   */
-  const GetFamily = async () => {
-    const q = query(
-      collection(db, "Families"),
-      where("email", "==", auth.currentUser.email)
-    );
-    const querySnapshot = await getDocs(q);
-
-    querySnapshot.forEach((doc) => {
-      setUserData(doc.data());
-    });
+          // console.log(`current_user: ${current_user}, current_role: ${current_role}`);
+          router.replace("/chore");
+        } catch (e) {
+          console.log('Error setting current user & role to async storage:', e);
+        }
+      }},
+    ]);
   };
   return (
     <SafeAreaView>
@@ -45,7 +59,7 @@ export default function Userlist() {
         <HeaderLogo />
         <Text style={styles.title}>Who are you?</Text>
         <View style={styles.body_wrapper}>
-          {userData?.parents?.map((parent, index) => (
+          {UserData?.parents?.map((parent, index) => (
             <FamilyMember
               key={index}
               member={{ ...parent, role: "parent" }}
@@ -53,7 +67,9 @@ export default function Userlist() {
               showPoint={false}
             />
           ))}
-          {userData?.kids?.map((kid, index) => (
+        </View>
+        <View style={styles.body_wrapper}>
+          {UserData?.kids?.map((kid, index) => (
             <FamilyMember
               key={index}
               member={{ ...kid, role: "kid" }}
@@ -66,20 +82,20 @@ export default function Userlist() {
   );
 }
 const styles = StyleSheet.create({
-  container: {
-    alignItems: "center",
-    padding: 40,
-  },
-
-  title: {
-    marginTop: 30,
-    fontSize: 25,
-    fontFamily: "outfit-regular",
-  },
   body_wrapper: {
     flexWrap: "wrap",
     justifyContent: "center",
     alignItems: "center",
     flexDirection: "row",
+  },
+  container: {
+    alignItems: "center",
+    padding: 40,
+  },
+  title: {
+    marginTop: 30,
+    fontSize: 25,
+    fontFamily: "outfit-regular",
+    marginBottom: 20,
   },
 });

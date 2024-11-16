@@ -1,25 +1,46 @@
 import { View, Text, StyleSheet, ScrollView } from "react-native";
-import React, { useContext } from "react";
-import { Image } from "react-native";
-import KidInfo from "./KidInfo";
-import { UserContext } from "../../../contexts/UserContext";
 
-export default function Header() {
-  const { userData } = useContext(UserContext);
+// context
+import { useUserProvider } from "../../../contexts/UserContext";
+
+// components
+import KidInfo from "./KidInfo";
+
+export default function Header({ currentUser, currentRole }) {
+  
+  const userData = useUserProvider();
+
   return (
     <View style={styles.container}>
-      <ScrollView horizontal={true}>
-        {userData?.kids?.map((kid, index) => (
-          <KidInfo key={index} kid={kid} />
-        ))}
-      </ScrollView>
+      {currentRole === "parent" ? (
+        <ScrollView horizontal={true}>
+          {userData?.kids?.map((kid, index) => ( <KidInfo 
+              key={index} 
+              kid={kid}
+              currentUser={currentUser}
+              family={userData.email}
+            /> ))}
+        </ScrollView>
+      ) : (
+        <View>
+          {userData?.kids?.filter(kid => kid.name === currentUser)
+            .map((kid, index) => ( <KidInfo 
+              key={index} 
+              kid={kid}
+              currentUser={currentUser}
+              family={userData.email}
+            /> ))}
+        </View>
+      )}
     </View>
   );
 }
 const styles = StyleSheet.create({
   container: {
     gap: 15,
-    padding: 10,
-    // marginTop: -30,
+    padding: 5,
+    // marginTop: -60,
+    position: "absolute",
+    top: "8%",
   },
 });

@@ -1,11 +1,19 @@
 import React, { useState } from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+
+// router
 import { useRouter } from "expo-router";
 
-export default function Category({ category }) {
+// icons
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+
+// constants
+import Colors from "../../../constants/Colors";
+import Keys from "../../../constants/Keys";
+
+export default function Category({ category, currentRole }) {
   const router = useRouter();
-  const [selectedCategory, setSelectedCategory] = useState();
+  const [selectedCategory, setSelectedCategory] = useState(Keys.PENDING);
 
   const handlePendingClick = () => {
     router.push({ pathname: "/chore/assignChore" });
@@ -16,73 +24,74 @@ export default function Category({ category }) {
       {/* Circle 1: Pending */}
       <View style={styles.circleContainer}>
         <TouchableOpacity
-          style={[styles.circle, { backgroundColor: "#D3A5A5" }]}
+          style={[selectedCategory === Keys.PENDING ? styles.circleSelected : styles.circle, { backgroundColor: Colors.CHORE_COLORS.PENDING }]}
           onPress={() => {
-            setSelectedCategory("Pending");
-            category("Pending");
+            setSelectedCategory(Keys.PENDING);
+            category(Keys.PENDING);
           }}
         >
-          <MaterialIcons name="hourglass-empty" size={25} color={"#802828"} />
-          {/* <MaterialIcons name="pending-actions" size={30} color={"#802828"} /> */}
+          <MaterialIcons name="hourglass-empty" size={25} color={Colors.CHORE_COLORS.PENDING_ICON} />
         </TouchableOpacity>
-        <Text style={styles.text}>Pending</Text>
+        <Text style={styles.text}>{Keys.PENDING}</Text>
       </View>
 
-      {/* Circle 2: Approval */}
+      {/* Circle 2: In-Progress */}
       <View style={styles.circleContainer}>
         <TouchableOpacity
-          style={[styles.circle, { backgroundColor: "#D1E7FD" }]}
+          style={[selectedCategory === Keys.IN_PROGRESS ? styles.circleSelected : styles.circle, { backgroundColor: Colors.CHORE_COLORS.IN_PROGRESS }]}
           onPress={() => {
-            setSelectedCategory("Approval");
-            category("Approval");
+            setSelectedCategory(Keys.IN_PROGRESS);
+            category(Keys.IN_PROGRESS);
           }}
         >
           <MaterialIcons
             name="approval"
             size={25}
-            color={"#0055A4"}
+            color={Colors.CHORE_COLORS.IN_PROGRESS_ICON}
             style={styles.icon}
           />
         </TouchableOpacity>
-        <Text style={styles.text}>Approve</Text>
+        <Text style={styles.text}>{Keys.IN_PROGRESS}</Text>
       </View>
 
       {/* Circle 3: Completed */}
       <View style={styles.circleContainer}>
         <TouchableOpacity
-          style={[styles.circle, { backgroundColor: "#E1EFDF" }]}
+          style={[selectedCategory === Keys.COMPLETED ? styles.circleSelected : styles.circle, { backgroundColor: Colors.CHORE_COLORS.COMPLETED }]}
           onPress={() => {
-            setSelectedCategory("Completed");
-            category("Completed");
+            setSelectedCategory(Keys.COMPLETED);
+            category(Keys.COMPLETED);
           }}
         >
           <MaterialIcons
             name="check-circle-outline"
             size={30}
-            color={"#28A745"}
+            color={Colors.CHORE_COLORS.COMPLETED_ICON}
           />
         </TouchableOpacity>
-        <Text style={styles.text}>Completed</Text>
+        <Text style={styles.text}>{Keys.COMPLETED}</Text>
       </View>
 
-      {/* Circle 4: In Progress */}
-      <View style={styles.circleContainer}>
-        <TouchableOpacity
-          style={[styles.circle, { backgroundColor: "#ffd5d3" }]}
-          onPress={() => {
-            setSelectedCategory("Assign");
-            handlePendingClick();
-          }}
-        >
-          <MaterialIcons
-            name="pending-actions"
-            size={25}
-            color={"#724040"}
-            style={styles.icon}
-          />
-        </TouchableOpacity>
-        <Text style={styles.text}>Assign</Text>
-      </View>
+      {/* Circle 4: Assign */}
+      {currentRole === "parent" && 
+        <View style={styles.circleContainer}>
+          <TouchableOpacity
+            style={[styles.circle, { backgroundColor: Colors.CHORE_COLORS.ASSIGN }]}
+            onPress={() => {
+              setSelectedCategory("Assign");
+              handlePendingClick();
+            }}
+          >
+            <MaterialIcons
+              name="pending-actions"
+              size={25}
+              color={Colors.CHORE_COLORS.ASSIGND_ICON}
+              style={styles.icon}
+            />
+          </TouchableOpacity>
+          <Text style={styles.text}>Assign</Text>
+        </View>
+      }
     </View>
   );
 }
@@ -90,22 +99,31 @@ export default function Category({ category }) {
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-evenly",
     alignItems: "center",
     gap: 10,
     paddingHorizontal: 10,
     padding: 20,
+    marginTop: 60,
   },
   circleContainer: {
     alignItems: "center",
   },
   circle: {
-    backgroundColor: "#D3D3D3",
     borderRadius: 50,
     padding: 20,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 10,
+  },
+  circleSelected: {
+    borderRadius: 50,
+    padding: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 10,
+    borderColor: Colors.SHADE_BLUE,
+    borderWidth: 4
   },
   text: {
     fontSize: 14,

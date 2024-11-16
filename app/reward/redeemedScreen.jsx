@@ -1,29 +1,57 @@
-import { View, SafeAreaView, StyleSheet } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  SafeAreaView, 
+  StyleSheet,
+  View
+} from "react-native";
 import { useNavigation } from "expo-router";
+
+// async storage
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+// context
+import { useUserProvider } from "../../contexts/UserContext";
 
 // components
 import Kids from "../../components/reward/kids";
 import Redeemed from "../../components/reward/Redeemed";
 
-// context
-import { UserContext } from "../../contexts/UserContext";
-
 // constants
 import Colors from "../../constants/Colors";
+import Keys from "../../constants/Keys";
 
 export default function RedeemedScreen() {
   const navigation = useNavigation();
-  const { userData } = useContext(UserContext);
+  const userData = useUserProvider();
   const [selectedKid, setSelectedKid] = useState();
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [currentRole, setCurrentRole] = useState(null);
+
+  const GetCurrentUser = async () => {
+    const current_user = await AsyncStorage.getItem(Keys.CURRENT_USER);
+    setCurrentUser(current_user);
+
+    const current_role = await AsyncStorage.getItem(Keys.CURRENT_ROLE);
+    setCurrentRole  (current_role);
+
+    setIsLoading(false);
+  }
 
   useEffect(() => {
-    if (userData.currentRole === "kid" && userData?.kids) {
+    GetCurrentUser();
+  }, []);
+
+  useEffect(() => {
+    if (!currentRole || !userData || !currentUser) return
+
+    if (currentRole === "kid" && userData?.kids) {
       const currentKid = userData.kids.find(
-        (kid) => kid.name === userData.currentUser
+        (kid) => kid.name === currentUser
       );
       setSelectedKid(currentKid);
-    } else if (userData.currentRole === "parent" && userData?.kids) {
+    } else if (currentRole === "parent" && userData?.kids) {
       setSelectedKid(userData.kids[0]);
     }
     navigation.setOptions({
@@ -32,7 +60,7 @@ export default function RedeemedScreen() {
       headerTitle: "Redeemed",
       headerBackTitle: "Back",
     });
-  }, [userData, setSelectedKid]);
+  }, [currentRole, currentUser, userData]);
 
   const OnSelectedKid = (kid) => {
     setSelectedKid(kid);
@@ -40,14 +68,27 @@ export default function RedeemedScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.WHITE }}>
-      <View style={styles.container}>
-        <Kids
-          onSelect={OnSelectedKid}
-          selectedKid={selectedKid}
-          showPoint={true}
+      {isLoading ? (
+        <ActivityIndicator
+          size="small"
+          color={Colors.PRIMARY}
+          style={styles.loader}
         />
-        <Redeemed selectedKid={selectedKid} />
-      </View>
+      ): (
+        <View style={styles.container}>
+          <Kids
+            onSelect={OnSelectedKid}
+            selectedKid={selectedKid}
+            showPoint={true}
+            currentRole={currentRole}
+          />
+          <Redeemed 
+            selectedKid={selectedKid}
+            currentUser={currentUser}
+            currentRole={currentRole}
+          />
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -60,7 +101,6 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     backgroundColor: Colors.WHITE,
   },
-
   footer: {
     marginBottom: 20,
   },
@@ -76,5 +116,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     width: "70%",
+  },
+  loader: {
+    marginTop: "50%",
+    marginBottom: 20,
+    alignSelf: "center",
   },
 });

@@ -1,21 +1,39 @@
 import { View, Text, StyleSheet, ImageBackground } from "react-native";
-import React, { useContext } from "react";
+
+// router
 import { useRouter } from "expo-router";
-import Colors from "../../constants/Colors";
-//components
+
+// context
+import { useUserProvider } from "../../contexts/UserContext";
+
+// async storage
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+// components
 import FamilyMember from "../../components/family/FamilyMember";
-//context
-import { UserContext } from "../../contexts/UserContext";
+
+// constants
+import Colors from "../../constants/Colors";
+import Keys from "../../constants/Keys";
+import { useEffect, useState } from "react";
 
 export default function family() {
   const router = useRouter();
-  const { userData, setUserData } = useContext(UserContext);
+  const userData = useUserProvider();
 
-  const selectProfile = (profile) => {
-    setUserData((prevData) => ({
-      ...prevData,
-      selectedProfile: profile,
-    }));
+  const [currentUser, setCurrentUser] = useState('');
+
+  const GetCurrentUser = async () => {
+    const tmp = await AsyncStorage.getItem(Keys.CURRENT_USER);
+    setCurrentUser(tmp);
+  }
+
+  useEffect(() => {
+    GetCurrentUser();
+  }, []);
+
+  const selectProfile = async (profile) => {
+    await AsyncStorage.setItem(Keys.SELECTED_PROFILE, JSON.stringify(profile));
     router.push({ pathname: "/family/profile" });
   };
 
@@ -26,7 +44,7 @@ export default function family() {
         source={require("./../../assets/images/family.jpg")}
       >
         <Text style={styles.title}>
-          Welcome From {userData.currentUser}'s Family!
+          Welcome From {currentUser}'s Family!
         </Text>
       </ImageBackground>
 
@@ -39,6 +57,8 @@ export default function family() {
               onSelect={selectProfile}
             />
           ))}
+        </View>
+        <View style={styles.body_wrapper}>
           {userData?.kids?.map((kid, index) => (
             <FamilyMember key={index} member={kid} onSelect={selectProfile} />
           ))}
@@ -59,7 +79,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: "outfit-bold",
   },
-
   member_box: {
     flexWrap: "wrap",
     backgroundColor: Colors.WHITE,
@@ -69,7 +88,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 30,
     padding: 20,
   },
-
   body_wrapper: {
     marginTop: 20,
     justifyContent: "center",

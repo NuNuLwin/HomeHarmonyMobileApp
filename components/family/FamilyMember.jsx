@@ -8,7 +8,7 @@ export default function FamilyMember({
   showPoint,
   isSelected,
 }) {
-  console.log("=== FamilyMember ===", isSelected);
+  // console.log("=== FamilyMember ===", isSelected);
 
   return (
     <TouchableOpacity style={styles.img_box} onPress={() => onSelect(member)}>
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   selectedBorder: {
-    borderWidth: 3,
-    borderColor: Colors.GREY,
+    borderWidth: 5,
+    borderColor: Colors.SHADE_BLUE,
   },
 });

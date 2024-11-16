@@ -1,6 +1,14 @@
-import React, { useContext, useEffect, useState } from "react";
-import { View, Text, FlatList, StyleSheet } from "react-native";
-import Category from "./Category";
+import { useEffect, useState } from "react";
+import { 
+  ActivityIndicator, 
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  View
+} from "react-native";
+
+// firebase
 import {
   collection,
   doc,
@@ -8,79 +16,155 @@ import {
   getDocs,
   query,
   where,
-} from "firebase/firestore"; // Add Firebase imports
+} from "firebase/firestore";
 import { db } from "../../../config/FirebaseConfig";
-import { UserContext } from "../../../contexts/UserContext";
-import AssignChoreListItem from "./AssignChoreListItem";
 
-export default function AssignChoreList() {
+// context
+import { useUserProvider } from "../../../contexts/UserContext";
+
+// components
+import AssignChoreListItem from "./AssignChoreListItem";
+import Category from "./Category";
+
+// constants
+import Colors from "../../../constants/Colors";
+import Keys from "../../../constants/Keys";
+
+export default function AssignChoreList({ currentUser, currentRole }) {
+  const userData = useUserProvider();
+
+  const [selectedType, setSelectedType] = useState(Keys.PENDING);
   const [loader, setLoader] = useState(false);
-  const { userData } = useContext(UserContext);
   const [assignedChoreList, setAssignedChoreList] = useState([]);
 
+  // useEffect(() => {
+  //   if (userData) {
+  //     console.log('userData:', userData);
+  //     GetAssignChoreList("Pending");
+  //   }
+  // }, []);
+
   useEffect(() => {
-    setAssignedChoreList([]);
-    GetAssignChoreList("Pending");
-  }, []);
+    if (userData && currentUser && currentRole) {
+      console.log(`userData: ${userData}, current_user: ${currentUser}, current_role: ${currentRole}`);
+      GetAssignChoreList(Keys.PENDING);
+    }
+  }, [userData, currentUser, currentRole]);
+
+  const handleRemoveItem = (chore_id) => {
+    if (!chore_id) return;
+
+    setAssignedChoreList(assignedChoreList.filter(x => x.id !== chore_id));
+  }
 
   const GetAssignChoreList = async (category) => {
-    console.log("Selected Category:", category);
-    setAssignedChoreList([]);
     setLoader(true);
+    
     try {
-      const q = query(
-        collection(db, "AssignChores"),
-        where("family", "==", userData.email),
-        where("status", "==", category)
-      );
+      let q = "";
+      if (currentRole === "parent") {
+        q = query(
+          collection(db, "AssignChores"),
+          where("family", "==", userData.email),
+          where("status", "==", category)
+        );
+      } else {
+        q = query(
+          collection(db, "AssignChores"),
+          where("family", "==", userData.email),
+          where("status", "==", category),
+          where("kidName", "==", currentUser)
+        );
+      }
+      
+      const assignedChores = []
       const querySnapshot = await getDocs(q);
-
-      querySnapshot.forEach(async (_doc) => {
-        console.log(_doc.data());
-
-        let assigned_chore = _doc.data();
-        if (assigned_chore.recommendChoreId) {
-          let _choreRef = doc(
-            db,
-            "RecommendChores",
-            assigned_chore.recommendChoreId
-          );
-          let _chore = await getDoc(_choreRef);
-          if (_chore.exists()) assigned_chore["chore"] = _chore.data();
-        } else if (assigned_chore.customChoreId) {
-          let _choreRef = doc(db, "CustomChores", assigned_chore.customChoreId);
-          let _chore = await getDoc(_choreRef);
-          if (_chore.exists()) assigned_chore["chore"] = _chore.data();
-        }
-
-        setAssignedChoreList((assignedChoreList) => [
-          ...assignedChoreList,
-          assigned_chore,
-        ]);
+      querySnapshot.forEach(x => {
+        let tmp = {...x.data()};
+        tmp['id'] = x.id;
+        assignedChores.push(tmp);
       });
 
+      const others = await Promise.all(assignedChores.map((_doc) => {
+        if (_doc.recommendChoreId) {
+          return getDoc(doc(
+            db, "RecommendChores",
+            _doc.recommendChoreId
+          ))
+        } else {
+          return getDoc(doc(
+            db, "CustomChores",
+            _doc.customChoreId
+          ))
+        }
+      }));
+      
+      let other_chores = {};
+      others.map(other => other_chores[other.id] = other.data());
+
+      assignedChores.forEach(assignedChore => {
+        assignedChore['id'] = assignedChore.id;
+        if (assignedChore.recommendChoreId) {
+          assignedChore['chore'] = other_chores[assignedChore.recommendChoreId];
+        } else {
+          assignedChore['chore'] = other_chores[assignedChore.customChoreId];
+        }
+      });
+
+      setAssignedChoreList(assignedChores);
       setLoader(false);
+
     } catch (error) {
       console.error("Error fetching chores: ", error);
-      setLoader(false);
     }
   };
   const renderSeparator = () => <View style={styles.separator} />;
 
   return (
-    <View>
+    <View
+      style={{ paddingLeft: 10, paddingRight: 10 }}
+    >
       {/* Pass GetAssignChoreList function as the `category` prop */}
       {/* <Category category={GetAssignChoreList} /> */}
-      <Category category={(value) => GetAssignChoreList(value)} />
-      <FlatList
-        data={assignedChoreList}
-        refreshing={loader}
-        // onRefresh={GetAssignChoreList("Pending")}
-        ItemSeparatorComponent={renderSeparator}
-        renderItem={({ item, index }) => (
-          <AssignChoreListItem chore={item.chore} />
-        )}
+      <Category 
+        category={(value) => {
+          setSelectedType(value);
+          GetAssignChoreList(value)
+        }} 
+        currentRole={currentRole}
       />
+      {loader ? (
+          <ActivityIndicator
+            size="small"
+            color={Colors.PRIMARY}
+            style={styles.loader}
+          />
+        ) : assignedChoreList.length === 0 ? (
+          <View style={styles.container}>
+            <Image
+              style={styles.img}
+              source={require("../../../assets/images/chore.jpg")}
+            />
+            <Text style={[styles.text, { marginTop: 15 }]}>No chores available.</Text>
+          </View>
+        ) : (
+        <FlatList
+          data={assignedChoreList}
+          // refreshing={loader}
+          // onRefresh={GetAssignChoreList("Pending")}
+          // ItemSeparatorComponent={renderSeparator}
+          renderItem={({ item, index }) => (
+            <AssignChoreListItem 
+              id={item.id}
+              chore={item.chore} 
+              currentUser={currentUser}
+              currentRole={currentRole}
+              status={selectedType}
+              handleRemoveItem={(chore_id) => handleRemoveItem(chore_id)}
+            />
+          )}
+        />
+      )}
     </View>
   );
 }
@@ -88,5 +172,22 @@ const styles = StyleSheet.create({
   separator: {
     height: 1,
     backgroundColor: "#ddd",
+  },
+  loader: {
+    marginTop: "50%",
+    marginBottom: 20,
+    alignSelf: "center",
+  },
+  img: {
+    width: 150,
+    height: 150,
+  },
+  container: {
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    borderRadius: 10,
+    marginTop: "10%",
+    // marginBottom: "45%",
   },
 });

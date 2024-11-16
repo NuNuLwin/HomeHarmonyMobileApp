@@ -1,11 +1,17 @@
+import { useContext, useState } from "react";
 import { View, Text, Image, StyleSheet, ScrollView } from "react-native";
-import React, { useContext, useState } from "react";
-import { UserContext } from "../../contexts/UserContext";
-import Colors from "./../../constants/Colors";
+
+// context
+import { useUserProvider } from "../../contexts/UserContext";
+
+// components
 import FamilyMember from "../family/FamilyMember";
 
-export default function kids({ onSelect, selectedKid, showPoint }) {
-  const { userData, setUserData } = useContext(UserContext);
+// constants
+import Colors from "./../../constants/Colors";
+
+export default function kids({ onSelect, selectedKid, showPoint, currentRole }) {
+  const userData = useUserProvider();
 
   const selectProfile = (profile) => {
     onSelect(profile);
@@ -13,7 +19,7 @@ export default function kids({ onSelect, selectedKid, showPoint }) {
   return (
     <ScrollView horizontal={true}>
       <View style={styles.container}>
-        {userData?.currentRole === "parent"
+        {currentRole === "parent"
           ? userData?.kids?.map((kid, index) => (
               <FamilyMember
                 key={index}
@@ -23,7 +29,7 @@ export default function kids({ onSelect, selectedKid, showPoint }) {
                 showPoint={showPoint}
               />
             ))
-          : userData?.currentRole === "kid" &&
+          : currentRole === "kid" &&
             selectedKid && (
               <FamilyMember
                 key={selectedKid.name} // or use a unique identifier like ID

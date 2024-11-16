@@ -1,41 +1,155 @@
-import { View, Text, StyleSheet, Image } from "react-native";
-import React from "react";
-import Colors from "../../../constants/Colors";
-import { TouchableOpacity } from "react-native";
+import { useState } from "react";
+import { 
+  Animated,
+  Image,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
-export default function AssignChoreListItem({ chore }) {
+// firebase
+import { doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { db } from "../../../config/FirebaseConfig";
+
+// swipeable
+import { RectButton, Swipeable } from "react-native-gesture-handler";
+
+// constants
+import Colors from "../../../constants/Colors";
+import Keys from "../../../constants/Keys";
+
+export default function AssignChoreListItem({ id, chore, currentUser, currentRole, status, handleRemoveItem }) {
+  const [loading, setLoading] = useState(false);
+
+  const handleChoreUpdate = async (to_delete) => {
+    setLoading(true);
+
+    console.log('=== handleChoreUpdate ===', id);
+    
+    if (to_delete) {
+      try {
+        await deleteDoc(doc(db, "AssignChores", id));
+        handleRemoveItem(id);
+      } catch (error) {
+        console.log('Delete assigned chore status error:', error);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      let new_status = "";
+      if (status === Keys.PENDING && currentRole === "parent") {
+        new_status = Keys.COMPLETED;
+      } else if (status === Keys.PENDING && currentRole === "kid") {
+        new_status = Keys.IN_PROGRESS;
+      } else if (status === Keys.IN_PROGRESS && currentRole === "parent") {
+        new_status = Keys.COMPLETED;
+      }
+  
+      console.log("=== new status ===", new_status, id);
+
+      if (!new_status) return;
+      
+      try {
+        await updateDoc(doc(db, "AssignChores", id), { status: new_status });
+        handleRemoveItem(id);
+      } catch (error) {
+        console.log('Update assigned chore status error:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+  }
+
+  const leftSwipeActions = (e, _chore) => {
+    if ((status === Keys.PENDING) || (status === Keys.IN_PROGRESS && currentRole === "parent"))
+    {
+    return <View style={{ width: 100, marginTop: 5 }}>
+      <Animated.View style={{ flex: 1, transform: [{ translateX: 0 }] }}>
+        <RectButton
+          onPress={() => handleChoreUpdate(false)}
+          style={[styles.rightAction, { backgroundColor: Colors.GREEN }]}
+        >
+          {loading ? (
+            <Text style={styles.actionText}>Updating</Text>
+          ) : (
+            <Text style={styles.actionText}>Complete</Text>
+          )}
+        </RectButton>
+      </Animated.View>
+    </View>
+    }
+    return null;
+  }
+
+  const rightSwipeActions = (e, _chore) => {
+    if (currentRole === "parent") {
+      return (
+        <View style={{ width: 100, marginTop: 5 }}>
+          <Animated.View style={{ flex: 1, transform: [{ translateX: 0 }] }}>
+            <RectButton
+              onPress={() => handleChoreUpdate(true)}
+              style={[styles.rightAction, { backgroundColor: Colors.RED }]}
+            >
+              {loading ? (
+                <Text style={styles.actionText}>Deleting</Text>
+              ) : (
+                <Text style={styles.actionText}>Delete</Text>
+              )}
+            </RectButton>
+          </Animated.View>
+        </View>
+      );
+    }
+    return null;
+  }
+
   return (
-    <View style={styles.card}>
-      {chore.image ? (
-        <Image source={{ uri: chore.image }} style={styles.img} />
-      ) : (
-        <Image
-          style={styles.img}
-          source={require("./../../../assets/images/to-do-list.png")}
-        />
-      )}
-      <View style={styles.infoContainer}>
-        <Text style={[styles.text, { fontSize: 16 }]}>{chore.name}</Text>
-        <View style={styles.point_container}>
-          <Image
-            source={require("./../../../assets/images/coin.png")}
-            style={styles.img1}
-          />
-          <Text style={[styles.text, { color: Colors.GREY }]}>
-            {chore.point} pts
-          </Text>
+    <Swipeable
+      renderLeftActions={(e) => leftSwipeActions(e, chore)}
+      renderRightActions={(e) => rightSwipeActions(e, chore)}
+      leftThreshold={30}
+      rightThreshold={40}
+      friction={2}
+    > 
+      <View style={[styles.card, { backgroundColor: Colors.CHORE_COLORS[status.toUpperCase().replace('-', '_')]}]}>
+        <View style={styles.bar}></View>
+        <View style={styles.mainContent}>
+          {chore.image ? (
+            <Image source={{ uri: chore.image }} style={styles.img} />
+          ) : (
+            <Image
+              style={styles.img}
+              source={require("./../../../assets/images/to-do-list.png")}
+            />
+          )}
+          <View style={styles.infoContainer}>
+            <Text style={[styles.text, { fontSize: 16 }]}>{chore.name}</Text>
+            <View style={styles.point_container}>
+              <Image
+                source={require("./../../../assets/images/coin.png")}
+                style={styles.img1}
+              />
+              <Text style={[styles.text, { color: Colors.GREY }]}>
+                {chore.point} pts
+              </Text>
+            </View>
+          </View>
         </View>
       </View>
-    </View>
+    </Swipeable>
   );
 }
 const styles = StyleSheet.create({
   card: {
+    marginTop: 5,
     gap: 10,
-    padding: 10,
-    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: "row",
+    backgroundColor: Colors.WHITE,
+    borderWidth: 1,
+    borderColor: Colors.LIGHT_BLUE,
+    borderRadius: 10,
   },
   img: {
     width: 40,
@@ -71,5 +185,32 @@ const styles = StyleSheet.create({
   text: {
     fontFamily: "outfit-regular",
     fontSize: 14,
+  },
+  rightAction: {
+    alignItems: "center",
+    flex: 1,
+    justifyContent: "center",
+  },
+  actionText: {
+    color: "white",
+    fontSize: 16,
+    backgroundColor: "transparent",
+    padding: 10,
+  },
+  bar: {
+    width: 1,
+    height: "100%",
+  },
+  mainContent: {
+    padding: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingLeft: 10,
+    flex: 1,
+    justifyContent: "flex-start",
+    backgroundColor: Colors.WHITE,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
   },
 });

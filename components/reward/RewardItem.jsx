@@ -1,18 +1,22 @@
+import { useContext, useState } from "react";
 import {
-  Animated,
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  Alert,
   ActivityIndicator,
+  Alert,
+  Animated,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
-import React, { useContext, useState } from "react";
-import Colors from "../../constants/Colors";
-import { TouchableOpacity } from "react-native";
+
+// context
 import { UserContext } from "../../contexts/UserContext";
+
+// swipe
 import { RectButton, Swipeable } from "react-native-gesture-handler";
 
+// firebase
 import {
   updateDoc,
   addDoc,
@@ -23,10 +27,12 @@ import {
   where,
   deleteDoc,
 } from "firebase/firestore";
-
 import { db } from "../../config/FirebaseConfig";
 
-export default function RewardItem({ reward, selectedKid, onDelete }) {
+// constants
+import Colors from "../../constants/Colors";
+
+export default function RewardItem({ reward, selectedKid, onDelete, currentUser, currentRole }) {
   const { userData, setUserData } = useContext(UserContext);
   const [loading, setLoading] = useState(false);
 
@@ -69,7 +75,7 @@ export default function RewardItem({ reward, selectedKid, onDelete }) {
           kidName: selectedKid.name,
           rewardName: reward.name,
           point: reward.point,
-          redeemBy: userData.currentUser,
+          redeemBy: currentUser,
           redeemDate: Timestamp.now(),
         });
 
@@ -118,13 +124,13 @@ export default function RewardItem({ reward, selectedKid, onDelete }) {
     }
   };
   const rightSwipeActions = (e, re) => {
-    if (userData.currentRole === "parent") {
+    if (currentRole === "parent") {
       return (
         <View style={{ width: 100, marginTop: 5 }}>
           <Animated.View style={{ flex: 1, transform: [{ translateX: 0 }] }}>
             <RectButton
               onPress={() => rightSwipeDeleteActions(reward)}
-              style={[styles.rightAction, { backgroundColor: "#dd2150" }]}
+              style={[styles.rightAction, { backgroundColor: Colors.RED }]}
             >
               {loading ? (
                 <Text style={styles.actionText}>Deleting</Text>
@@ -190,19 +196,15 @@ const styles = StyleSheet.create({
     gap: 10,
     alignItems: "center",
     flexDirection: "row",
-    backgroundColor: Colors.WHITE,
-    // borderRadius: 10,
+    backgroundColor: "#7F9AFD",
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: Colors.LIGHT_BLUE,
   },
   bar: {
-    width: "1%",
-    backgroundColor: "#7F9AFD",
+    width: 1,
     height: "100%",
-    // borderTopLeftRadius: 10,
-    // borderBottomLeftRadius: 10,
   },
-
   point_container: {
     flexDirection: "row",
     gap: 10,
@@ -233,13 +235,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
     paddingLeft: 0,
-    width: "95%",
+    flex: 1,
     justifyContent: "space-between",
+    backgroundColor: Colors.WHITE,
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
   },
   detailsContainer: {
     flexDirection: "row",
     gap: 10,
     flex: 1,
+    paddingLeft: 5,
   },
   actionText: {
     color: "white",

@@ -9,7 +9,7 @@ import {
 import React, { useContext, useEffect, useState } from "react";
 
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { UserContext } from "../../contexts/UserContext";
+import { useUserProvider } from "../../contexts/UserContext";
 import { db } from "../../config/FirebaseConfig";
 import Colors from "../../constants/Colors";
 
@@ -18,22 +18,28 @@ import { ActivityIndicator } from "react-native";
 
 const { height } = Dimensions.get("window");
 
-export default function Redeemed({ selectedKid }) {
+export default function Redeemed({ selectedKid, currentUser, currentRole }) {
   const [redeemed, setRedeemed] = useState([]);
-  const { userData } = useContext(UserContext);
+  const userData = useUserProvider();
   const [loader, setLoader] = useState(false);
 
   useEffect(() => {
-    if (selectedKid) {
-      setRedeemed([]);
+    if (userData && currentUser && currentRole) {
       GetAllRedeemedByKid();
     }
-  }, [selectedKid]);
+  }, [selectedKid, userData, currentUser, currentRole])
 
-  useEffect(() => {
-    setRedeemed([]);
-    GetAllRedeemedByKid();
-  }, []);
+  // useEffect(() => {
+  //   if (selectedKid) {
+  //     setRedeemed([]);
+  //     GetAllRedeemedByKid();
+  //   }
+  // }, [selectedKid]);
+
+  // useEffect(() => {
+  //   setRedeemed([]);
+  //   GetAllRedeemedByKid();
+  // }, []);
 
   /**
    * Used to Get all redeemed  from DB
@@ -43,7 +49,7 @@ export default function Redeemed({ selectedKid }) {
     setLoader(true);
     try {
       const q =
-        userData.currentRole === "parent"
+        currentRole === "parent"
           ? selectedKid
             ? query(
                 collection(db, "Redeemed"),
@@ -54,30 +60,32 @@ export default function Redeemed({ selectedKid }) {
                 collection(db, "Redeemed"),
                 where("family", "==", userData.email)
               )
-          : userData.currentRole === "kid"
+          : currentRole === "kid"
           ? query(
               collection(db, "Redeemed"),
               where("family", "==", userData.email),
-              where("kidName", "==", userData.currentUser)
+              where("kidName", "==", currentUser)
             )
           : null;
 
-      const querySnapshot = await getDocs(q);
-
-      const redeemedList = querySnapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          ...data,
-          redeemDate: data.redeemDate?.toDate
-            ? data.redeemDate.toDate()
-            : data.redeemDate,
-        };
-      });
-
-      // Sort by redeemDate in descending order (latest date first)
-      redeemedList.sort((a, b) => b.redeemDate - a.redeemDate);
-
-      setRedeemed(redeemedList);
+      if (q) {
+        const querySnapshot = await getDocs(q);
+  
+        const redeemedList = querySnapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            ...data,
+            redeemDate: data.redeemDate?.toDate
+              ? data.redeemDate.toDate()
+              : data.redeemDate,
+          };
+        });
+  
+        // Sort by redeemDate in descending order (latest date first)
+        redeemedList.sort((a, b) => b.redeemDate - a.redeemDate);
+  
+        setRedeemed(redeemedList);
+      }
       setLoader(false);
     } catch (error) {
       setLoader(false);
@@ -95,7 +103,7 @@ export default function Redeemed({ selectedKid }) {
 
       {loader ? (
         <ActivityIndicator
-          size="large"
+          size="small"
           color={Colors.PRIMARY}
           style={styles.loader}
         />
@@ -116,7 +124,7 @@ export default function Redeemed({ selectedKid }) {
             style={styles.img}
             source={require("./../../assets/images/money.png")}
           />
-          <Text style={styles.text}>No redeem made by kids.</Text>
+          <Text style={[styles.text, { marginTop: 15 }]}>No redeem made by kids.</Text>
         </View>
       )}
     </View>
@@ -133,6 +141,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     borderRadius: 10,
+    marginTop: "50%",
   },
 
   text: {
@@ -145,7 +154,7 @@ const styles = StyleSheet.create({
     height: 50,
   },
   loader: {
-    marginTop: 20,
+    marginTop: "50%",
     alignSelf: "center",
   },
 });

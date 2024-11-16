@@ -1,41 +1,76 @@
-import { View, SafeAreaView, StyleSheet, Alert } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { 
+  ActivityIndicator,
+  Alert,
+  SafeAreaView,
+  StyleSheet,
+  View
+} from "react-native";
+
+// expo
 import { useNavigation } from "expo-router";
 
+// firebase
+import { addDoc, collection } from "firebase/firestore";
+import { db } from "../../config/FirebaseConfig";
+
+// async storage
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+// context
+import { useUserProvider } from "../../contexts/UserContext";
+
 // components
-import Kids from "../../components/reward/kids";
 import AddButton from "../../components/reward/AddButton";
 import AddReward from "../../components/reward/AddReward";
+import Kids from "../../components/reward/kids";
 import Rewards from "../../components/reward/Rewards";
 
-import { addDoc, collection } from "firebase/firestore";
-import { UserContext } from "../../contexts/UserContext";
-import { db } from "../../config/FirebaseConfig";
+// constants
 import Colors from "../../constants/Colors";
+import Keys from "../../constants/Keys";
 
 export default function RewardScreen() {
   const navigation = useNavigation();
+  const userData = useUserProvider();
+
   const [isModalVisible, setModalVisible] = useState(false);
-  const { userData, setUserData } = useContext(UserContext);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isListLoading, setIsListLoading] = useState(false);
   const [selectedKid, setSelectedKid] = useState();
+  const [currentUser, setCurrentUser] = useState(null);
+  const [currentRole, setCurrentRole] = useState(null);
+
+  const GetCurrentUser = async () => {
+    const current_user = await AsyncStorage.getItem(Keys.CURRENT_USER);
+    setCurrentUser(current_user);
+
+    const current_role = await AsyncStorage.getItem(Keys.CURRENT_ROLE);
+    setCurrentRole  (current_role);
+
+    setIsLoading(false);
+  }
 
   useEffect(() => {
-    if (userData.currentRole === "kid" && userData?.kids) {
-      const currentKid = userData.kids.find(
-        (kid) => kid.name === userData.currentUser
-      );
-      setSelectedKid(currentKid);
-    } else if (userData.currentRole === "parent" && userData?.kids) {
-      setSelectedKid(userData.kids[0]);
-    }
+    GetCurrentUser();
     navigation.setOptions({
       headerShown: true,
       headerTransparent: true,
       headerTitle: "Rewards",
       headerBackTitle: "Back",
     });
-  }, [userData, setSelectedKid]);
+  }, []);
+
+  useEffect(() => {
+    if (currentUser && currentRole === "kid" && userData?.kids) {
+      const currentKid = userData.kids.find(
+        (kid) => kid.name === currentUser
+      );
+      setSelectedKid(currentKid);
+    } else if (currentRole === "parent" && userData?.kids) {
+      setSelectedKid(userData.kids[0]);
+    }
+  }, [userData, currentUser, currentRole]);
 
   const handleAddReward = () => {
     setModalVisible(!isModalVisible); // Toggle the modal visibility
@@ -43,7 +78,8 @@ export default function RewardScreen() {
 
   const handleSave = async (rewardName, points) => {
     console.log(rewardName, points);
-    setIsLoading(true);
+    setModalVisible(false);
+    setIsListLoading(true);
 
     try {
       await addDoc(collection(db, "Rewards"), {
@@ -51,16 +87,16 @@ export default function RewardScreen() {
         name: rewardName,
         point: points,
         status: "Available",
-        createdby: userData.currentUser,
+        createdby: currentUser,
       });
 
-      setModalVisible(false);
+      
       Alert.alert("Reward saved successfully!");
     } catch (error) {
       console.error("Error saving reward: ", error);
       Alert.alert("Error saving reward. Please try again.");
     } finally {
-      setIsLoading(false);
+      setIsListLoading(false);
     }
   };
 
@@ -70,26 +106,51 @@ export default function RewardScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.WHITE }}>
-      <View style={styles.container}>
-        <Kids
-          onSelect={OnSelectedKid}
-          selectedKid={selectedKid}
-          showPoint={true}
-        />
-        <Rewards selectedKid={selectedKid} />
-      </View>
-
-      {/* Add Button */}
-      <View style={styles.footer}>
-        <AddButton handleAddReward={handleAddReward} />
-      </View>
-
-      {/* Modal */}
-      <AddReward
-        isVisible={isModalVisible}
-        onClose={handleAddReward}
-        onSave={handleSave}
-      />
+      {isLoading ? <ActivityIndicator
+          size="small"
+          color={Colors.PRIMARY}
+          style={styles.loader}
+        />: (
+          <>
+            <View style={styles.container}>
+              <Kids
+                onSelect={OnSelectedKid}
+                selectedKid={selectedKid}
+                showPoint={true}
+                currentRole={currentRole}
+              />
+              {isListLoading ? (
+                <ActivityIndicator
+                  size="small"
+                  color={Colors.PRIMARY}
+                  style={styles.listLoader}
+                />
+              ) : (
+                <Rewards 
+                  selectedKid={selectedKid}
+                  currentRole={currentRole}
+                  currentUser={currentUser}
+                />
+              )}
+            </View>
+      
+            {/* Add Button */}
+            {currentRole === "parent" && 
+              <View style={styles.footer}>
+                <AddButton handleAddReward={handleAddReward} />
+              </View>
+            }
+      
+            {/* Modal */}
+            {currentRole === "parent" && 
+              <AddReward
+                isVisible={isModalVisible}
+                onClose={handleAddReward}
+                onSave={handleSave}
+              />
+            }
+          </>
+        )}
     </SafeAreaView>
   );
 }
@@ -102,9 +163,10 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     backgroundColor: Colors.WHITE,
   },
-
   footer: {
-    marginBottom: 20,
+    bottom: "12%",
+    right: "50%",
+    position: "absolute",
   },
   modal_wrapper: {
     alignItems: "center",
@@ -118,5 +180,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     width: "70%",
+  },
+  loader: {
+    marginTop: "50%",
+    marginBottom: 20,
+    alignSelf: "center",
+  },
+  listLoader: {
+    marginTop: "50%",
+    marginBottom: 20,
+    alignSelf: "center",
   },
 });
