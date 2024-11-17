@@ -11,13 +11,21 @@ import {
 import { Agenda } from "react-native-calendars";
 
 import moment from "moment";
+import Colors from "../../constants/Colors";
+import Feather from "@expo/vector-icons/Feather";
+import { useRouter } from "expo-router";
 
 export default function calendar() {
   const [items, setItems] = useState({});
+  const router = useRouter();
 
   const timeToString = (time) => {
     const date = new Date(time);
     return date.toISOString().split("T")[0];
+  };
+
+  const handleAddEvent = () => {
+    router.push({ pathname: "/calendar/addEvent" });
   };
 
   const handleRenderItem = (item, isFirst) => {
@@ -122,6 +130,11 @@ export default function calendar() {
           agendaKnobColor: "blue",
         }}
       />
+      <View style={styles.btnWrapper}>
+        <TouchableOpacity style={styles.btn} onPress={handleAddEvent}>
+          <Feather name="plus" size={30} color="white" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -151,13 +164,15 @@ const styles = StyleSheet.create({
     height: 20,
   },
   item: {
-    backgroundColor: "#BDD8BD",
+    backgroundColor: "#F0FFF0",
     borderRadius: 5,
     flex: 1,
     gap: 10,
     padding: 10,
     marginRight: 10,
     marginTop: 17,
+    borderColor: "#BDD8BD",
+    borderWidth: 1,
   },
   itemDetails: {
     display: "flex",
@@ -174,6 +189,24 @@ const styles = StyleSheet.create({
   },
   wrapper: {
     flex: 1,
-    backgroundColor: "blue",
+    backgroundColor: Colors.WHITE,
+  },
+  btnWrapper: {
+    position: "absolute",
+    bottom: 20, // Adjust for desired vertical spacing
+    right: 20, // Adjust for desired horizontal spacing
+  },
+
+  btn: {
+    width: 50,
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 30,
+    backgroundColor: Colors.GREEN,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
   },
 });
