@@ -77,6 +77,7 @@ export default function SignIn() {
             style={styles.input}
             placeholder="Enter Email"
             onChangeText={(val) => setEmail(val)}
+            autoCapitalize='none'
           ></TextInput>
         </View>
 
@@ -88,6 +89,7 @@ export default function SignIn() {
             style={styles.input}
             placeholder="Enter Password"
             onChangeText={(val) => setPassword(val)}
+            autoCapitalize='none'
           ></TextInput>
         </View>
 

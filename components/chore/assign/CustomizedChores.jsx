@@ -6,8 +6,9 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
-import CustomizedChoreItem from "./CustomizedChoreItem";
+import { useEffect, useState } from "react";
+
+// firestore
 import {
   addDoc,
   collection,
@@ -17,17 +18,49 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../../../config/FirebaseConfig";
-import { UserContext } from "../../../contexts/UserContext";
-import Colors from "../../../constants/Colors";
+
+// context
+import { useUserProvider } from "../../../contexts/UserContext";
+
+// async storage
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+// components
 import AddButton from "./AddButton";
 import AddCustomChore from "./AddCustomChore";
+import CustomizedChoreItem from "./CustomizedChoreItem";
+
+// constants
+import Colors from "../../../constants/Colors";
+import Keys from "../../../constants/Keys";
+Keys
 
 export default function CustomizedChores({ selectedKid }) {
+  const userData = useUserProvider();
+
   const [customChore, setCustomChore] = useState([]);
   const [loader, setLoader] = useState(false);
-  const { userData } = useContext(UserContext);
   const [isModalVisible, setModalVisible] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [currentRole, setCurrentRole] = useState(null);
+
+  const GetCurrentUser = async () => {
+    try {
+      const current_user = await AsyncStorage.getItem(Keys.CURRENT_USER);
+      setCurrentUser(current_user);
+  
+      const current_role = await AsyncStorage.getItem(Keys.CURRENT_ROLE);
+      setCurrentRole(current_role);
+    } catch (error) {
+      console.log('Error getting current user from async storage:', error);
+    } finally {
+      setLoader(false);
+    }
+  }
+
+  useEffect(() => {
+    GetCurrentUser();
+  }, []);
 
   useEffect(() => {
     if (selectedKid) {
@@ -66,14 +99,14 @@ export default function CustomizedChores({ selectedKid }) {
   };
 
   const handleSave = async (choreName, points) => {
-    setIsLoading(true);
+    setLoader(true);
 
     try {
       await addDoc(collection(db, "CustomChores"), {
         family: userData.email,
         name: choreName,
         point: points,
-        createdby: userData.currentUser,
+        createdby: currentUser,
         createdAt: new Date(),
       });
 
@@ -83,7 +116,7 @@ export default function CustomizedChores({ selectedKid }) {
       console.error("Error saving custom chore: ", error);
       Alert.alert("Error saving custom chore. Please try again.");
     } finally {
-      setIsLoading(false);
+      setLoader(false);
       GetCustomChores();
     }
   };
@@ -97,7 +130,7 @@ export default function CustomizedChores({ selectedKid }) {
         customChoreId: chore.id,
         kidName: selectedKid.name,
         status: "Pending",
-        createdby: userData.currentUser,
+        createdby: currentUser,
         createdAt: new Date(),
       });
 

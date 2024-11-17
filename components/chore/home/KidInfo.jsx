@@ -1,4 +1,4 @@
-import { View, Text, Image, StyleSheet } from "react-native";
+import { View, Text, Image, StyleSheet, Dimensions } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 
 // firebase
@@ -19,34 +19,11 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import Colors from "../../../constants/Colors";
 import Keys from "../../../constants/Keys";
 
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
+
 export default function KidInfo({ kid, index, currentUser, family }) {
   const [chores, setChores] = useState([]);
-  const [pendingCount, setPendingCount] = useState(0);
-  const [inProgressCount, setInProgressCount] = useState(0);
-  const [completedCount, setCompletedCount] = useState(0);
-
-  // const GetChoresByKid = async () => {
-  //   console.log("=== GetChoresByKid ===", kid.name, currentUser);
-  //   const _query = query(
-  //     collection(db, "AssignChores"),
-  //     where("family", "==", currentUser),
-  //     where("kidName", "==", kid.name),
-  //   );
-  //   const querySnapshot = await getDocs(_query);
-  //   console.log('querySnapshot ==> ', querySnapshot);
-  //   querySnapshot.forEach(x => {
-  //     let tmp = {...x.data()};
-  //     tmp['id'] = x.id;
-  //     console.log('tmp => ', tmp);
-  //     setChores((d) => [...d, tmp]);
-  //   });
-  // }
-
-  // const UpdateChoreCount = (_chores) => {
-  //   setPendingCount(_chores.filter(x => x.status === Keys.PENDING).length);
-  //   setInProgressCount(_chores.filter(x => x.status === Keys.IN_PROGRESS).length);
-  //   setCompletedCount(_chores.filter(x => x.status === Keys.COMPLETED).length);
-  // }
 
   useEffect(() => {
     if (!currentUser) return;
@@ -60,37 +37,37 @@ export default function KidInfo({ kid, index, currentUser, family }) {
 
     const unsubscribe = onSnapshot(_query, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
+        console.log('=== change ===', change.type, change.doc.id, change.doc.data());
         if (change.type === "added") {
-          let _chore = { id: change.doc.id, ...change.doc.data() };
-          if (!chores.find((x) => x.id === _chore.id)) {
-            setChores((prev) => [...prev, _chore]);
-          }
+          setChores((prevArray) => [
+            ...prevArray,
+            { id: change.doc.id, ...change.doc.data() }
+          ]);
         } else if (change.type === "modified") {
-          let _chore = { id: change.doc.id, ...change.doc.data() };
-          let index = chores.findIndex((x) => x.id === _chore.id);
-          if (index > -1) {
-            let copied = [...chores];
-            copied[index] = _chore;
-            setChores(copied);
-          }
+          setChores((prevArray) => {
+            const index = prevArray.findIndex((item) => item.id === change.doc.id);
+            if (index !== -1) {
+              const updatedArray = [...prevArray];
+              updatedArray[index] = { id: change.doc.id, ...change.doc.data() };
+              return updatedArray;
+            }
+            return prevArray;
+          });
         } else if (change.type === "removed") {
-          let _chore = { id: change.doc.id, ...change.doc.data() };
-          let index = chores.findIndex((x) => x.id === _chore.id);
-          if (index > -1) {
-            let copied = chores.filter((x) => x.id !== _chore.id);
-            setChores(copied);
-          }
+          setDataArray((prevArray) => 
+            prevArray.filter((item) => item.id !== change.doc.id)
+          );
         }
       });
     });
     return () => unsubscribe();
-  }, [currentUser]);
+  }, []);
 
   return (
     <View
       style={[
         styles.kid_info_box,
-        { width: currentUser === kid.name ? "100%" : "auto" },
+        { width: currentUser === kid.name ? windowWidth - 20 : windowWidth - 40 },
       ]}
     >
       <View style={styles.icon_wrapper_parent2}>
@@ -161,7 +138,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     alignSelf: "center",
     justifyContent: "center",
-    flexGrow: 1,
   },
   kid_info_box: {
     padding: 5,
@@ -189,16 +165,16 @@ const styles = StyleSheet.create({
   status_wrapper: {
     flexGrow: 1,
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-evenly",
+    // gap: 10
   },
   icon_wrapper: {
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: Colors.WHITE,
-    padding: 10,
-    borderRadius: 10,
-    marginLeft: 10,
-    minWidth: 90,
+    padding: 5,
+    borderRadius: 5,
+    width: (windowWidth - 160) / 3,
   },
   icon_wrapper_parent: {
     flexDirection: "row",
@@ -210,6 +186,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 10,
+    flex: 1,
   },
   iconContainer: {
     backgroundColor: Colors.LIGHT_PRIMARY,
@@ -218,7 +195,7 @@ const styles = StyleSheet.create({
   },
   text2: {
     fontFamily: "outfit-regular",
-    fontSize: 14,
+    fontSize: 11,
   },
   img1: {
     width: 25,

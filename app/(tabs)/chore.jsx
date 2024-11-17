@@ -1,4 +1,11 @@
-import { View, Text, SafeAreaView, StyleSheet, ImageBackground } from "react-native";
+import { 
+  ActivityIndicator,
+  ImageBackground,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 
 // router
@@ -22,13 +29,20 @@ import { TouchableOpacity } from "react-native";
 export default function chore() {
   const [currentUser, setCurrentUser] = useState(null);
   const [currentRole, setCurrentRole] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const GetCurrentUser = async () => {
-    const current_user = await AsyncStorage.getItem(Keys.CURRENT_USER);
-    setCurrentUser(current_user);
-
-    const current_role = await AsyncStorage.getItem(Keys.CURRENT_ROLE);
-    setCurrentRole  (current_role);
+    try {
+      const current_user = await AsyncStorage.getItem(Keys.CURRENT_USER);
+      setCurrentUser(current_user);
+  
+      const current_role = await AsyncStorage.getItem(Keys.CURRENT_ROLE);
+      setCurrentRole  (current_role);
+    } catch (error) {
+      console.error("Error getting async storage update:", error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -39,35 +53,45 @@ export default function chore() {
 
   return (
     <SafeAreaView style={{ backgroundColor: Colors.WHITE }}>
-      <View style={styles.container}>
-        <View
-          style={{ 
-            flexDirection: "row", 
-            justifyContent: "space-between",
-            alignItems: "center"
-          }}
-        >
-          {/* <Text style={styles.title}>Hello, {currentUser}!</Text> */}
-        </View>
-        <ImageBackground
-          style={styles.img}
-          source={require("./../../assets/images/chore.jpg")}
-        >
-          <Text style={styles.title}>Chores</Text>
-        </ImageBackground>
-        <Header 
-          currentRole={currentRole}
-          currentUser={currentUser}
-        />
-        <AssignChoreList
-          currentRole={currentRole}
-          currentUser={currentUser}
-        />
-        
-          <TouchableOpacity onPress={() => {
-            router.replace("/family/userlist");
-          }}><Text>Select</Text></TouchableOpacity>
-      </View>
+      {loading ? (
+          <View style={styles.container}>
+            <ActivityIndicator
+              size="small"
+              color={Colors.PRIMARY}
+              style={styles.loader}
+            />
+          </View>
+        ): (
+          <View style={styles.container}>
+            <View
+              style={{ 
+                flexDirection: "row", 
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}
+            >
+              {/* <Text style={styles.title}>Hello, {currentUser}!</Text> */}
+            </View>
+            <ImageBackground
+              style={styles.img}
+              source={require("./../../assets/images/chore.jpg")}
+            >
+              <Text style={styles.title}>Chores</Text>
+            </ImageBackground>
+            <Header 
+              currentRole={currentRole}
+              currentUser={currentUser}
+            />
+            <AssignChoreList
+              currentRole={currentRole}
+              currentUser={currentUser}
+            />
+            
+              <TouchableOpacity onPress={() => {
+                router.replace("/family/userlist");
+              }}><Text>Select</Text></TouchableOpacity>
+          </View>
+        )}
     </SafeAreaView>
   );
 }
@@ -88,5 +112,10 @@ const styles = StyleSheet.create({
     fontFamily: "outfit-regular",
     fontSize: 25,
     fontWeight: 700,
+  },
+  loader: {
+    marginTop: 20,
+    marginBottom: 20,
+    alignSelf: "center",
   },
 });

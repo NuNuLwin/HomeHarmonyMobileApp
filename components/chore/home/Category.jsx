@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingHorizontal: 10,
     padding: 20,
-    marginTop: 60,
+    marginTop: 55,
   },
   circleContainer: {
     alignItems: "center",

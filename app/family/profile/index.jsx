@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { 
+  ActivityIndicator,
   Image,
   SafeAreaView, 
   StyleSheet, 
@@ -35,10 +36,17 @@ export default function Profile() {
   const userData = useUserProvider();
   
   const [selectedProfile, setSelectedProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const GetSelectedProfile = async () => {
-    const selected_profile = await AsyncStorage.getItem(Keys.SELECTED_PROFILE);
-    setSelectedProfile(JSON.parse(selected_profile));
+    try {
+      const selected_profile = await AsyncStorage.getItem(Keys.SELECTED_PROFILE);
+      setSelectedProfile(JSON.parse(selected_profile));
+    } catch (error) {
+      console.error("Error getting async storage update:", error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -66,33 +74,43 @@ export default function Profile() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.img_wrapper}>
-        {selectedProfile && <Image
-          source={{ uri: selectedProfile.image }}
-          style={styles.profile_img}
-          onError={(error) =>
-            console.log("Image load error:", error.nativeEvent.error)
-          }
-        />}
-      </View>
+      {loading ? (
+        <ActivityIndicator
+          size="small"
+          color={Colors.PRIMARY}
+          style={styles.loader}
+        />
+      ) : (
+        <>
+          <View style={styles.img_wrapper}>
+            {selectedProfile && <Image
+              source={{ uri: selectedProfile.image }}
+              style={styles.profile_img}
+              onError={(error) =>
+                console.log("Image load error:", error.nativeEvent.error)
+              }
+            />}
+          </View>
 
-      <Text style={styles.headerText}>{selectedProfile?.name}</Text>
+          <Text style={styles.headerText}>{selectedProfile?.name}</Text>
 
-      <FontAwesome name="birthday-cake" size={24} color="black" />
-      <Text style={styles.text}>{selectedProfile?.dob}</Text>
+          <FontAwesome name="birthday-cake" size={24} color="black" />
+          <Text style={styles.text}>{selectedProfile?.dob}</Text>
 
-      <TouchableOpacity style={styles.icon_wrapper} onPress={signOutUser}>
-        <View style={styles.iconContainer}>
-          <Ionicons
-            name="exit"
-            size={30}
-            color={Colors.PRIMARY}
-            style={styles.icon}
-          />
-        </View>
+          <TouchableOpacity style={styles.icon_wrapper} onPress={signOutUser}>
+            <View style={styles.iconContainer}>
+              <Ionicons
+                name="exit"
+                size={30}
+                color={Colors.PRIMARY}
+                style={styles.icon}
+              />
+            </View>
 
-        <Text style={styles.text2}>Log out</Text>
-      </TouchableOpacity>
+            <Text style={styles.text2}>Log out</Text>
+          </TouchableOpacity>
+        </>
+      )}
     </SafeAreaView>
   );
 }
@@ -138,7 +156,6 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   iconContainer: { backgroundColor: Colors.LIGHT_PRIMARY, borderRadius: 10 },
-
   input: {
     marginTop: 10,
     padding: 15,
@@ -148,5 +165,10 @@ const styles = StyleSheet.create({
   profile_img: {
     flex: 1,
     borderRadius: 50,
+  },
+  loader: {
+    marginTop: 20,
+    marginBottom: 20,
+    alignSelf: "center",
   },
 });

@@ -8,6 +8,9 @@ import {
   View,
 } from "react-native";
 
+// router
+import { useRouter } from "expo-router";
+
 // firebase
 import { doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../../../config/FirebaseConfig";
@@ -15,14 +18,15 @@ import { db } from "../../../config/FirebaseConfig";
 // swipeable
 import { RectButton, Swipeable } from "react-native-gesture-handler";
 
+// async storage
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 // constants
 import Colors from "../../../constants/Colors";
 import Keys from "../../../constants/Keys";
-import { useRouter } from "expo-router";
 
 export default function AssignChoreListItem({
-  id,
-  chore,
+  assigned_chore,
   currentUser,
   currentRole,
   status,
@@ -31,15 +35,15 @@ export default function AssignChoreListItem({
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleChoreUpdate = async (to_delete) => {
+  const handleChoreUpdate = async (to_delete, to_reject) => {
     setLoading(true);
 
-    console.log("=== handleChoreUpdate ===", id);
+    console.log("=== handleChoreUpdate ===", assigned_chore.id);
 
     if (to_delete) {
       try {
-        await deleteDoc(doc(db, "AssignChores", id));
-        handleRemoveItem(id);
+        await deleteDoc(doc(db, "AssignChores", assigned_chore.id));
+        handleRemoveItem(assigned_chore.id);
       } catch (error) {
         console.log("Delete assigned chore status error:", error);
       } finally {
@@ -47,7 +51,10 @@ export default function AssignChoreListItem({
       }
     } else {
       let new_status = "";
-      if (status === Keys.PENDING && currentRole === "parent") {
+      if (to_reject) {
+        new_status = Keys.PENDING;
+      }
+      else if (status === Keys.PENDING && currentRole === "parent") {
         new_status = Keys.COMPLETED;
       } else if (status === Keys.PENDING && currentRole === "kid") {
         new_status = Keys.IN_PROGRESS;
@@ -55,13 +62,13 @@ export default function AssignChoreListItem({
         new_status = Keys.COMPLETED;
       }
 
-      console.log("=== new status ===", new_status, id);
+      console.log("=== new status ===", new_status, assigned_chore.id);
 
       if (!new_status) return;
 
       try {
-        await updateDoc(doc(db, "AssignChores", id), { status: new_status });
-        handleRemoveItem(id);
+        await updateDoc(doc(db, "AssignChores", assigned_chore.id), { status: new_status });
+        handleRemoveItem(assigned_chore.id);
       } catch (error) {
         console.log("Update assigned chore status error:", error);
       } finally {
@@ -70,7 +77,7 @@ export default function AssignChoreListItem({
     }
   };
 
-  const leftSwipeActions = (e, _chore) => {
+  const leftSwipeActions = () => {
     if (
       status === Keys.PENDING ||
       (status === Keys.IN_PROGRESS && currentRole === "parent")
@@ -79,7 +86,7 @@ export default function AssignChoreListItem({
         <View style={{ width: 100, marginTop: 5 }}>
           <Animated.View style={{ flex: 1, transform: [{ translateX: 0 }] }}>
             <RectButton
-              onPress={() => handleChoreUpdate(false)}
+              onPress={() => handleChoreUpdate(false, false)}
               style={[styles.rightAction, { backgroundColor: Colors.GREEN }]}
             >
               {loading ? (
@@ -95,13 +102,13 @@ export default function AssignChoreListItem({
     return null;
   };
 
-  const rightSwipeActions = (e, _chore) => {
-    if (currentRole === "parent") {
+  const rightSwipeActions = () => {
+    if (currentRole === "parent" && status === Keys.COMPLETED) {
       return (
         <View style={{ width: 100, marginTop: 5 }}>
           <Animated.View style={{ flex: 1, transform: [{ translateX: 0 }] }}>
             <RectButton
-              onPress={() => handleChoreUpdate(true)}
+              onPress={() => handleChoreUpdate(true, false)}
               style={[styles.rightAction, { backgroundColor: Colors.RED }]}
             >
               {loading ? (
@@ -113,19 +120,37 @@ export default function AssignChoreListItem({
           </Animated.View>
         </View>
       );
+    } else if (currentRole === "parent" && status === Keys.IN_PROGRESS) {
+      return (
+        <View style={{ width: 100, marginTop: 5 }}>
+          <Animated.View style={{ flex: 1, transform: [{ translateX: 0 }] }}>
+            <RectButton
+              onPress={() => handleChoreUpdate(false, true)}
+              style={[styles.rightAction, { backgroundColor: Colors.RED }]}
+            >
+              {loading ? (
+                <Text style={styles.actionText}>Rejecting</Text>
+              ) : (
+                <Text style={styles.actionText}>Reject</Text>
+              )}
+            </RectButton>
+          </Animated.View>
+        </View>
+      );
     }
     return null;
   };
 
   // event
-  const handleChoreDetailClick = () => {
+  const handleChoreDetailClick = async () => {
+    await AsyncStorage.setItem(Keys.SELECTED_CHORE, JSON.stringify(assigned_chore));
     router.push({ pathname: "/chore/choreDetail" });
   };
 
   return (
     <Swipeable
-      renderLeftActions={(e) => leftSwipeActions(e, chore)}
-      renderRightActions={(e) => rightSwipeActions(e, chore)}
+      renderLeftActions={() => leftSwipeActions()}
+      renderRightActions={() => rightSwipeActions()}
       leftThreshold={30}
       rightThreshold={40}
       friction={2}
@@ -142,8 +167,8 @@ export default function AssignChoreListItem({
       >
         <View style={styles.bar}></View>
         <View style={styles.mainContent}>
-          {chore.image ? (
-            <Image source={{ uri: chore.image }} style={styles.img} />
+          {assigned_chore.chore.image ? (
+            <Image source={{ uri: assigned_chore.chore.image }} style={styles.img} />
           ) : (
             <Image
               style={styles.img}
@@ -151,10 +176,10 @@ export default function AssignChoreListItem({
             />
           )}
           <View style={styles.infoContainer}>
-            <Text style={[styles.text, { fontSize: 16 }]}>{chore.name}</Text>
+            <Text style={[styles.text, { fontSize: 16 }]}>{assigned_chore.chore.name}</Text>
             <View style={styles.point_container}>
               <View style={styles.left_box}>
-                <Text style={[styles.text, { color: Colors.GREY }]}>hi</Text>
+                <Text style={[styles.text, { color: Colors.GREY }]}>{assigned_chore.kidName}</Text>
               </View>
               <View style={styles.right_box}>
                 <Image
@@ -162,7 +187,7 @@ export default function AssignChoreListItem({
                   style={styles.img1}
                 />
                 <Text style={[styles.text, { color: Colors.GREY }]}>
-                  {chore.point} pts
+                  {assigned_chore.chore.point} pts
                 </Text>
               </View>
             </View>
@@ -252,7 +277,7 @@ const styles = StyleSheet.create({
   },
   right_box: {
     flex: 1,
-    alignItems: "flex-end",
+    justifyContent: "flex-end",
     flexDirection: "row",
   },
 });

@@ -7,6 +7,7 @@ import {
   Text,
   View
 } from "react-native";
+import { useIsFocused } from "@react-navigation/native";
 
 // firebase
 import {
@@ -32,24 +33,25 @@ import Keys from "../../../constants/Keys";
 
 export default function AssignChoreList({ currentUser, currentRole }) {
   const userData = useUserProvider();
+  const isFocused = useIsFocused();
 
   const [selectedType, setSelectedType] = useState(Keys.PENDING);
   const [loader, setLoader] = useState(false);
   const [assignedChoreList, setAssignedChoreList] = useState([]);
 
-  // useEffect(() => {
-  //   if (userData) {
-  //     console.log('userData:', userData);
-  //     GetAssignChoreList("Pending");
-  //   }
-  // }, []);
+  useEffect(() => {
+    if (userData && currentUser && currentRole) {
+      console.log('userData:', userData);
+      GetAssignChoreList("Pending");
+    }
+  }, []);
 
   useEffect(() => {
     if (userData && currentUser && currentRole) {
       console.log(`userData: ${userData}, current_user: ${currentUser}, current_role: ${currentRole}`);
       GetAssignChoreList(Keys.PENDING);
     }
-  }, [userData, currentUser, currentRole]);
+  }, [isFocused, userData, currentUser, currentRole]);
 
   const handleRemoveItem = (chore_id) => {
     if (!chore_id) return;
@@ -61,6 +63,7 @@ export default function AssignChoreList({ currentUser, currentRole }) {
     setLoader(true);
     
     try {
+      console.log('=== TESTING => 1 ===', currentRole);
       let q = "";
       if (currentRole === "parent") {
         q = query(
@@ -111,6 +114,7 @@ export default function AssignChoreList({ currentUser, currentRole }) {
         }
       });
 
+      console.log('=== TESTING => 2 ===', assignedChores);
       setAssignedChoreList(assignedChores);
       setLoader(false);
 
@@ -150,13 +154,14 @@ export default function AssignChoreList({ currentUser, currentRole }) {
         ) : (
         <FlatList
           data={assignedChoreList}
-          // refreshing={loader}
-          // onRefresh={GetAssignChoreList("Pending")}
+          refreshing={loader}
+          onRefresh={() => GetAssignChoreList(selectedType)}
           // ItemSeparatorComponent={renderSeparator}
           renderItem={({ item, index }) => (
             <AssignChoreListItem 
-              id={item.id}
-              chore={item.chore} 
+              // id={item.id}
+              // chore={item.chore} 
+              assigned_chore={item}
               currentUser={currentUser}
               currentRole={currentRole}
               status={selectedType}

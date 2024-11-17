@@ -1,18 +1,78 @@
+import { useEffect, useState } from "react";
 import {
-  View,
-  Text,
+  ActivityIndicator,
+  Alert,
+  Image,
   SafeAreaView,
   StyleSheet,
-  Image,
+  Text,
   TouchableOpacity,
+  View,
 } from "react-native";
-import React, { useEffect } from "react";
-import { useNavigation } from "expo-router";
-import Colors from "../../constants/Colors";
+
+// router
+import { useNavigation, useRouter } from "expo-router";
+
+// firebase
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { db, storage } from "../../config/FirebaseConfig";
+
+// async storage
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+// image picker
+import * as ImagePicker from "expo-image-picker";
+
+// icons
 import Ionicons from "@expo/vector-icons/Ionicons";
+
+// components
+import { Uploading } from "../../components/common/Uploading";
+
+// constants
+import Colors from "../../constants/Colors";
+import Folders from "../../constants/Folders";
+import Keys from "../../constants/Keys";
 
 export default function choreDetail() {
   const navigation = useNavigation();
+  const router = useRouter();
+  
+  const [currentRole, setCurrentRole] = useState(null);
+  const [selectedChore, setSelectedChore] = useState(null);
+  const [progress, setProgress] = useState(0);
+  const [image, setImage] = useState();
+  const [images, setImages] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [btnLoading, setBtnLoading] = useState(false);
+
+  const CHORE_FOLDER = Folders.CHORE_FOLDER;
+
+  const GetSelectedChore = async () => {
+    try {
+      let selected_chore = await AsyncStorage.getItem(Keys.SELECTED_CHORE);
+      selected_chore = JSON.parse(selected_chore);
+
+      const docRef = doc(db, "AssignChores", selected_chore.id);
+      const docSnap = await getDoc(docRef);
+      selected_chore = { id: selected_chore.id, ...docSnap.data(), chore: selected_chore.chore };
+
+      if (selected_chore?.images) {
+          setImages(selected_chore.images);
+      }
+      setSelectedChore(selected_chore);
+
+      const current_role = await AsyncStorage.getItem(Keys.CURRENT_ROLE);
+      setCurrentRole(current_role);
+    } catch (error) {
+      console.error("Error getting async storage update:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
     navigation.setOptions({
       headerShown: true,
@@ -20,60 +80,227 @@ export default function choreDetail() {
       headerTitle: "Detail",
       headerBackTitle: "Home",
     });
+
+    GetSelectedChore();
   }, []);
+
+  const doUploadImage = async (uri, uploadProgress) => {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    const storageRef = ref(
+      storage,
+      `${CHORE_FOLDER}/` + new Date().getTime()
+    );
+    const task = uploadBytesResumable(storageRef, blob);
+
+    task.on(
+      "state_changed",
+      (snapshot) => {
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        if (uploadProgress) {
+          setProgress(parseInt(progress.toFixed()));
+        }
+      },
+      (error) => {
+        // handle error
+        console.log("File upload error:", error);
+      }
+    );
+    await task;
+    return await getDownloadURL(task.snapshot.ref);
+  }
+
+  const uploadImage = async (uri) => {
+    let file_url = await doUploadImage(uri, true);
+    return file_url;
+  };
+
+  const takeImage = async () => {
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (permissionResult.granted === false) {
+      Alert.alert("No permission for the camera!");
+      return;
+    }
+
+    let result = await ImagePicker.launchCameraAsync();
+
+    if (!result.canceled) {
+      // On iPhone, modal does not appear when camera dialog is closed
+      setTimeout(async () => {
+        try {
+          setShowModal(true);
+          setImage(result.assets[0].uri);
+
+          // Wrap in try...catch to catch errors in uploadImage or Firestore update
+          const file_url = await uploadImage(result.assets[0].uri, "image");
+          let copiedImages = [...images];
+          copiedImages.push(file_url);
+          setImages(copiedImages);
+
+          console.log('=== selectedChore.id ===', selectedChore.id);
+          console.log('=== copiedImages ===', copiedImages);
+
+          await updateDoc(doc(db, "AssignChores", selectedChore.id), { images: copiedImages });
+
+          setShowModal(false);
+          setProgress(0);
+          setImage(null);
+        } catch (error) {
+          console.error("Error during image upload or Firestore update:", error);
+          setShowModal(false); // Ensure modal is closed even if there's an error
+        }
+      }, 500);
+    }
+  }
+
+  const handleCompleteClicked = async () => {
+    if (btnLoading) return;
+
+    setBtnLoading(true);
+    
+    try {
+      let newStatus = currentRole === "parent" ? Keys.COMPLETED : Keys.IN_PROGRESS;
+      await updateDoc(doc(db, "AssignChores", selectedChore.id), { status: newStatus });
+    
+      Alert.alert('Sucess', 'The chore status has been updated!', [
+        {text: 'OK', onPress: () => router.replace({ pathname: "/chore" })},
+      ]);
+      
+    } catch (error) {
+      console.log('Error updating chore status:', error);
+    } finally {
+      setBtnLoading(false);
+    }
+  }
+
+  const handleRejectClicked = async () => {
+    if (btnLoading) return;
+
+    setBtnLoading(true);
+    
+    try {
+      let newStatus = Keys.PENDING;
+      await updateDoc(doc(db, "AssignChores", selectedChore.id), { status: newStatus });
+      
+      Alert.alert('Sucess', 'The chore status has been updated!', [
+        {text: 'OK', onPress: () => router.replace({ pathname: "/chore" })},
+      ]);
+
+    } catch (error) {
+      console.log('Error updating chore status:', error);
+    } finally {
+      setBtnLoading(false);
+    }
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.WHITE }}>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.left_box}>
-            <Text style={styles.text_medium}>30 Pts</Text>
-          </View>
-          <View style={styles.right_box}>
-            <Text>BiBi</Text>
-          </View>
-        </View>
-
-        <View style={styles.img_wrapper}>
-          <Image
-            style={styles.img}
-            source={require("./../../assets/images/table.png")}
+      {loading ? (
+          <ActivityIndicator
+            size="small"
+            color={Colors.PRIMARY}
+            style={styles.loader}
           />
-          <Text style={[styles.text, { fontSize: 20 }]}>Clean table</Text>
-        </View>
+        ): (
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <View style={styles.left_box}>
+              <Text style={styles.text_medium}>{selectedChore?.chore?.point} Pts</Text>
+            </View>
+            <View style={styles.right_box}>
+              <Text>{selectedChore?.kidName}</Text>
+            </View>
+          </View>
 
-        <View style={{ flexDirection: "row", gap: 10 }}>
-          <View style={styles.detail_box}>
-            <Text style={styles.text}>13-15 yrs</Text>
+          <View style={styles.img_wrapper}>
+            <Image
+              style={styles.img}
+              source={selectedChore?.chore?.image ? { uri: selectedChore.chore.image} : require("./../../assets/images/to-do-list.png")}
+            />
+            <Text style={[styles.text, { fontSize: 20 }]}>{selectedChore?.chore?.name}</Text>
           </View>
-          <View style={styles.detail_box}>
-            <Text style={styles.text}>Recommended</Text>
-          </View>
-        </View>
 
-        <View style={{ gap: 10, paddingTop: 20, paddingBottom: 30 }}>
-          <Text style={[styles.text_medium, { fontSize: 16 }]}>
-            Attach photo for Approval
-          </Text>
-          <TouchableOpacity style={styles.camera_box}>
-            <Ionicons name="camera" size={24} color="black" />
-          </TouchableOpacity>
-        </View>
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            <View style={styles.detail_box}>
+              <Text style={styles.text}>{selectedChore?.chore?.minAge}-{selectedChore?.chore?.maxAge} yrs</Text>
+            </View>
+            <View style={styles.detail_box}>
+              <Text style={styles.text}>{selectedChore?.chore?.image ? "Recommended" : "Custom"}</Text>
+            </View>
+          </View>
 
-        <View
-          style={{
-            gap: 10,
-            flexDirection: "row",
-            justifyContent: "space-between",
-          }}
-        >
-          <View style={[styles.btn, { backgroundColor: Colors.GREEN }]}>
-            <Text style={[styles.text, styles.btn_text]}>Complete</Text>
+          {(images.length > 2 || selectedChore.status === Keys.COMPLETED) ? (
+              <></>
+            ) : (
+            <Text style={[styles.text_medium, { fontSize: 16 }]}>
+              Attach photo for Approval
+            </Text>
+          )}
+
+          {showModal === true ? <Uploading image={image} progress={progress} /> : null}
+
+          <View style={{ gap: 10, paddingTop: 10, paddingBottom: 10, flexDirection: "row" }}>
+            {images.map(img => 
+                <Image
+                  style={styles.thumbnail}
+                  source={{ uri: img }}
+                  key={img}
+                />
+            )}
+            
+            {(images.length > 2 || selectedChore.status === Keys.COMPLETED) ? (
+              <></>
+            ) : (
+              <TouchableOpacity style={styles.camera_box} onPress={takeImage}>
+                <Ionicons name="camera" size={24} color="black" />
+              </TouchableOpacity>
+            )}
           </View>
-          <View style={[styles.btn, { backgroundColor: Colors.RED }]}>
-            <Text style={[styles.text, styles.btn_text]}>Reject</Text>
+
+          <View
+            style={{
+              gap: 10,
+              flexDirection: "row",
+              justifyContent: "space-between",
+            }}
+          >
+            {((selectedChore?.status === Keys.PENDING && currentRole === "kid") || 
+              ((selectedChore?.status === Keys.PENDING || selectedChore?.status === Keys.IN_PROGRESS) 
+              && currentRole === "parent")) && <TouchableOpacity 
+                style={[styles.btn, { backgroundColor: Colors.GREEN }]}
+                onPress={handleCompleteClicked}
+              >
+                {btnLoading ? (
+                  <ActivityIndicator
+                    size="small"
+                    color={Colors.WHITE}
+                    style={styles.btnLoader}
+                  />
+                ) : (
+                  <Text style={[styles.text, styles.btn_text]}>Complete</Text>
+                )}
+              </TouchableOpacity>
+            }
+            {(selectedChore?.status === Keys.IN_PROGRESS && currentRole === "parent") && <TouchableOpacity 
+                style={[styles.btn, { backgroundColor: Colors.RED }]}
+                onPress={handleRejectClicked}
+              >
+                {btnLoading ? (
+                  <ActivityIndicator
+                    size="small"
+                    color={Colors.WHITE}
+                    style={styles.btnLoader}
+                  />
+                ) : (
+                  <Text style={[styles.text, styles.btn_text]}>Reject</Text>
+                )}
+              </TouchableOpacity>
+            }
           </View>
         </View>
-      </View>
+        )}
     </SafeAreaView>
   );
 }
@@ -135,5 +362,17 @@ const styles = StyleSheet.create({
     color: Colors.WHITE,
     fontFamily: "outfit-medium",
     fontSize: 15,
+  },
+  thumbnail: {
+    width: 70,
+    height: 70
+  },
+  loader: {
+    marginTop: 20,
+    marginBottom: 20,
+    alignSelf: "center",
+  },
+  btnLoader: {
+    alignSelf: "center",
   },
 });

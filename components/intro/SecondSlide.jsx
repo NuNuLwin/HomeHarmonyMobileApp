@@ -52,6 +52,7 @@ const styles = StyleSheet.create({
   slider_img: {
     width: "100%",
     height: 300,
+    maxHeight: "35%",
   },
   desc: {
     padding: 40,

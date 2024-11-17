@@ -4,5 +4,6 @@ export default {
     SELECTED_PROFILE: "selected-profile",
     PENDING: "Pending",
     IN_PROGRESS: "In-Progress",
-    COMPLETED: "Completed"
+    COMPLETED: "Completed",
+    SELECTED_CHORE: "selected-chore",
 }

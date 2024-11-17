@@ -5,6 +5,7 @@ import { useUserProvider } from "../../../contexts/UserContext";
 
 // components
 import KidInfo from "./KidInfo";
+import { StatusBar } from "expo-status-bar";
 
 export default function Header({ currentUser, currentRole }) {
   
@@ -41,6 +42,6 @@ const styles = StyleSheet.create({
     padding: 5,
     // marginTop: -60,
     position: "absolute",
-    top: "8%",
+    top: StatusBar.length ? StatusBar.length + 60 : "8%",
   },
 });

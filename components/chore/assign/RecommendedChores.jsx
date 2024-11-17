@@ -1,19 +1,56 @@
-import { View, Text, StyleSheet, Alert } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
-import RecommendedChoreItem from "./RecommendedChoreItem";
-import { FlatList } from "react-native";
+import { useContext, useEffect, useState } from "react";
+import { 
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+
+// firebase
 import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../../config/FirebaseConfig";
+
+// async storage
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+// context
 import { ChoreContext } from "../../../contexts/ChoreContext";
-import { ActivityIndicator } from "react-native";
+import { useUserProvider } from "../../../contexts/UserContext";
+
+// components
+import RecommendedChoreItem from "./RecommendedChoreItem";
+
+// constants
 import Colors from "../../../constants/Colors";
-import { UserContext } from "../../../contexts/UserContext";
+import Keys from "../../../constants/Keys";
 
 export default function RecommendedChores({ selectedKid }) {
+  const userData = useUserProvider();
   const { setChoreData } = useContext(ChoreContext);
   const [recommendedChore, setRecommendedChore] = useState(null);
-  const [loader, setLoader] = useState(false);
-  const { userData } = useContext(UserContext);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [currentRole, setCurrentRole] = useState(null);
+  const [loader, setLoader] = useState(true);
+
+  const GetCurrentUser = async () => {
+    try {
+      const current_user = await AsyncStorage.getItem(Keys.CURRENT_USER);
+      setCurrentUser(current_user);
+  
+      const current_role = await AsyncStorage.getItem(Keys.CURRENT_ROLE);
+      setCurrentRole(current_role);
+    } catch (error) {
+      console.log('Error getting current user from async storage:', error);
+    } finally {
+      setLoader(false);
+    }
+  }
+
+  useEffect(() => {
+    GetCurrentUser();
+  }, []);
 
   useEffect(() => {
     if (selectedKid) {
@@ -117,7 +154,7 @@ export default function RecommendedChores({ selectedKid }) {
         recommendChoreId: chore.id,
         kidName: selectedKid.name,
         status: "Pending",
-        createdby: userData.currentUser,
+        createdby: currentUser,
         createdAt: new Date(),
       });
 

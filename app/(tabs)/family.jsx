@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, ImageBackground } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, View, Text, StyleSheet, ImageBackground } from "react-native";
 
 // router
 import { useRouter } from "expo-router";
@@ -15,17 +16,23 @@ import FamilyMember from "../../components/family/FamilyMember";
 // constants
 import Colors from "../../constants/Colors";
 import Keys from "../../constants/Keys";
-import { useEffect, useState } from "react";
 
 export default function family() {
   const router = useRouter();
   const userData = useUserProvider();
 
   const [currentUser, setCurrentUser] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const GetCurrentUser = async () => {
-    const tmp = await AsyncStorage.getItem(Keys.CURRENT_USER);
-    setCurrentUser(tmp);
+    try {
+      const tmp = await AsyncStorage.getItem(Keys.CURRENT_USER);
+      setCurrentUser(tmp);
+    } catch (error) {
+      console.log('Error getting current user from async storage:', error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -39,31 +46,39 @@ export default function family() {
 
   return (
     <View>
-      <ImageBackground
-        style={styles.img}
-        source={require("./../../assets/images/family.jpg")}
-      >
-        <Text style={styles.title}>
-          Welcome From {currentUser}'s Family!
-        </Text>
-      </ImageBackground>
+      {loading ? <ActivityIndicator
+          size="small"
+          color={Colors.PRIMARY}
+          style={styles.loader}
+        /> : (
+          <>
+            <ImageBackground
+              style={styles.img}
+              source={require("./../../assets/images/family.jpg")}
+            >
+              <Text style={styles.title}>
+                Welcome From {currentUser}'s Family!
+              </Text>
+            </ImageBackground>
 
-      <View style={styles.member_box}>
-        <View style={styles.body_wrapper}>
-          {userData?.parents?.map((parent, index) => (
-            <FamilyMember
-              key={index}
-              member={parent}
-              onSelect={selectProfile}
-            />
-          ))}
-        </View>
-        <View style={styles.body_wrapper}>
-          {userData?.kids?.map((kid, index) => (
-            <FamilyMember key={index} member={kid} onSelect={selectProfile} />
-          ))}
-        </View>
-      </View>
+            <View style={styles.member_box}>
+              <View style={styles.body_wrapper}>
+                {userData?.parents?.map((parent, index) => (
+                  <FamilyMember
+                    key={index}
+                    member={parent}
+                    onSelect={selectProfile}
+                  />
+                ))}
+              </View>
+              <View style={styles.body_wrapper}>
+                {userData?.kids?.map((kid, index) => (
+                  <FamilyMember key={index} member={kid} onSelect={selectProfile} />
+                ))}
+              </View>
+            </View>
+          </>
+        )}
     </View>
   );
 }
@@ -94,5 +109,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     flexWrap: "wrap",
+  },
+  loader: {
+    marginTop: 20,
+    marginBottom: 20,
+    alignSelf: "center",
   },
 });
