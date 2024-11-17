@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
-import { 
+import {
   ActivityIndicator,
   Image,
-  StyleSheet, 
+  StyleSheet,
   TouchableOpacity,
   Text,
   View,
@@ -37,7 +37,7 @@ export default function Menu({
   const [loadingRedeemed, setLoadingRedeemed] = useState(true);
 
   useEffect(() => {
-    if (userData && currentUser && currentRole){
+    if (userData && currentUser && currentRole) {
       setLoadingRewards(true);
       setLoadingRedeemed(true);
       CountRewards();
