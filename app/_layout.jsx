@@ -5,6 +5,7 @@ import { SignUpContext } from "../contexts/SignUpContext";
 import { UserProvider } from "../contexts/UserContext";
 import { ChoreContext } from "../contexts/ChoreContext";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { NavigationContainer } from "@react-navigation/native";
 
 export default function RootLayout() {
   useFonts({
@@ -26,9 +27,11 @@ export default function RootLayout() {
       <SignUpContext.Provider value={{ signUpData, setSignUpData }}>
         <UserProvider>
           <ChoreContext.Provider value={{ choreData, setChoreData }}>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="(tabs)" />
-            </Stack>
+            <NavigationContainer>
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="(tabs)" />
+              </Stack>
+            </NavigationContainer>
           </ChoreContext.Provider>
         </UserProvider>
       </SignUpContext.Provider>

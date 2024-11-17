@@ -38,7 +38,7 @@ import Keys from "../../constants/Keys";
 export default function choreDetail() {
   const navigation = useNavigation();
   const router = useRouter();
-  
+
   const [currentRole, setCurrentRole] = useState(null);
   const [selectedChore, setSelectedChore] = useState(null);
   const [progress, setProgress] = useState(0);
@@ -57,10 +57,14 @@ export default function choreDetail() {
 
       const docRef = doc(db, "AssignChores", selected_chore.id);
       const docSnap = await getDoc(docRef);
-      selected_chore = { id: selected_chore.id, ...docSnap.data(), chore: selected_chore.chore };
+      selected_chore = {
+        id: selected_chore.id,
+        ...docSnap.data(),
+        chore: selected_chore.chore,
+      };
 
       if (selected_chore?.images) {
-          setImages(selected_chore.images);
+        setImages(selected_chore.images);
       }
       setSelectedChore(selected_chore);
 
@@ -71,7 +75,7 @@ export default function choreDetail() {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     navigation.setOptions({
@@ -87,10 +91,7 @@ export default function choreDetail() {
   const doUploadImage = async (uri, uploadProgress) => {
     const response = await fetch(uri);
     const blob = await response.blob();
-    const storageRef = ref(
-      storage,
-      `${CHORE_FOLDER}/` + new Date().getTime()
-    );
+    const storageRef = ref(storage, `${CHORE_FOLDER}/` + new Date().getTime());
     const task = uploadBytesResumable(storageRef, blob);
 
     task.on(
@@ -109,7 +110,7 @@ export default function choreDetail() {
     );
     await task;
     return await getDownloadURL(task.snapshot.ref);
-  }
+  };
 
   const uploadImage = async (uri) => {
     let file_url = await doUploadImage(uri, true);
@@ -139,75 +140,85 @@ export default function choreDetail() {
           copiedImages.push(file_url);
           setImages(copiedImages);
 
-          console.log('=== selectedChore.id ===', selectedChore.id);
-          console.log('=== copiedImages ===', copiedImages);
+          console.log("=== selectedChore.id ===", selectedChore.id);
+          console.log("=== copiedImages ===", copiedImages);
 
-          await updateDoc(doc(db, "AssignChores", selectedChore.id), { images: copiedImages });
+          await updateDoc(doc(db, "AssignChores", selectedChore.id), {
+            images: copiedImages,
+          });
 
           setShowModal(false);
           setProgress(0);
           setImage(null);
         } catch (error) {
-          console.error("Error during image upload or Firestore update:", error);
+          console.error(
+            "Error during image upload or Firestore update:",
+            error
+          );
           setShowModal(false); // Ensure modal is closed even if there's an error
         }
       }, 500);
     }
-  }
+  };
 
   const handleCompleteClicked = async () => {
     if (btnLoading) return;
 
     setBtnLoading(true);
-    
+
     try {
-      let newStatus = currentRole === "parent" ? Keys.COMPLETED : Keys.IN_PROGRESS;
-      await updateDoc(doc(db, "AssignChores", selectedChore.id), { status: newStatus });
-    
-      Alert.alert('Sucess', 'The chore status has been updated!', [
-        {text: 'OK', onPress: () => router.replace({ pathname: "/chore" })},
+      let newStatus =
+        currentRole === "parent" ? Keys.COMPLETED : Keys.IN_PROGRESS;
+      await updateDoc(doc(db, "AssignChores", selectedChore.id), {
+        status: newStatus,
+      });
+
+      Alert.alert("Sucess", "The chore status has been updated!", [
+        { text: "OK", onPress: () => router.replace({ pathname: "/chore" }) },
       ]);
-      
     } catch (error) {
-      console.log('Error updating chore status:', error);
+      console.log("Error updating chore status:", error);
     } finally {
       setBtnLoading(false);
     }
-  }
+  };
 
   const handleRejectClicked = async () => {
     if (btnLoading) return;
 
     setBtnLoading(true);
-    
+
     try {
       let newStatus = Keys.PENDING;
-      await updateDoc(doc(db, "AssignChores", selectedChore.id), { status: newStatus });
-      
-      Alert.alert('Sucess', 'The chore status has been updated!', [
-        {text: 'OK', onPress: () => router.replace({ pathname: "/chore" })},
-      ]);
+      await updateDoc(doc(db, "AssignChores", selectedChore.id), {
+        status: newStatus,
+      });
 
+      Alert.alert("Sucess", "The chore status has been updated!", [
+        { text: "OK", onPress: () => router.replace({ pathname: "/chore" }) },
+      ]);
     } catch (error) {
-      console.log('Error updating chore status:', error);
+      console.log("Error updating chore status:", error);
     } finally {
       setBtnLoading(false);
     }
-  }
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.WHITE }}>
       {loading ? (
-          <ActivityIndicator
-            size="small"
-            color={Colors.PRIMARY}
-            style={styles.loader}
-          />
-        ): (
+        <ActivityIndicator
+          size="small"
+          color={Colors.PRIMARY}
+          style={styles.loader}
+        />
+      ) : (
         <View style={styles.container}>
           <View style={styles.header}>
             <View style={styles.left_box}>
-              <Text style={styles.text_medium}>{selectedChore?.chore?.point} Pts</Text>
+              <Text style={styles.text_medium}>
+                {selectedChore?.chore?.point} Pts
+              </Text>
             </View>
             <View style={styles.right_box}>
               <Text>{selectedChore?.kidName}</Text>
@@ -217,40 +228,56 @@ export default function choreDetail() {
           <View style={styles.img_wrapper}>
             <Image
               style={styles.img}
-              source={selectedChore?.chore?.image ? { uri: selectedChore.chore.image} : require("./../../assets/images/to-do-list.png")}
+              source={
+                selectedChore?.chore?.image
+                  ? { uri: selectedChore.chore.image }
+                  : require("./../../assets/images/to-do-list.png")
+              }
             />
-            <Text style={[styles.text, { fontSize: 20 }]}>{selectedChore?.chore?.name}</Text>
+            <Text style={[styles.text, { fontSize: 20 }]}>
+              {selectedChore?.chore?.name}
+            </Text>
           </View>
 
           <View style={{ flexDirection: "row", gap: 10 }}>
             <View style={styles.detail_box}>
-              <Text style={styles.text}>{selectedChore?.chore?.minAge}-{selectedChore?.chore?.maxAge} yrs</Text>
+              <Text style={styles.text}>
+                {selectedChore?.chore?.minAge}-{selectedChore?.chore?.maxAge}{" "}
+                yrs
+              </Text>
             </View>
             <View style={styles.detail_box}>
-              <Text style={styles.text}>{selectedChore?.chore?.image ? "Recommended" : "Custom"}</Text>
+              <Text style={styles.text}>
+                {selectedChore?.chore?.image ? "Recommended" : "Custom"}
+              </Text>
             </View>
           </View>
 
-          {(images.length > 2 || selectedChore.status === Keys.COMPLETED) ? (
-              <></>
-            ) : (
+          {images.length > 2 || selectedChore.status === Keys.COMPLETED ? (
+            <></>
+          ) : (
             <Text style={[styles.text_medium, { fontSize: 16 }]}>
               Attach photo for Approval
             </Text>
           )}
 
-          {showModal === true ? <Uploading image={image} progress={progress} /> : null}
+          {showModal === true ? (
+            <Uploading image={image} progress={progress} />
+          ) : null}
 
-          <View style={{ gap: 10, paddingTop: 10, paddingBottom: 10, flexDirection: "row" }}>
-            {images.map(img => 
-                <Image
-                  style={styles.thumbnail}
-                  source={{ uri: img }}
-                  key={img}
-                />
-            )}
-            
-            {(images.length > 2 || selectedChore.status === Keys.COMPLETED) ? (
+          <View
+            style={{
+              gap: 10,
+              paddingTop: 10,
+              paddingBottom: 10,
+              flexDirection: "row",
+            }}
+          >
+            {images.map((img) => (
+              <Image style={styles.thumbnail} source={{ uri: img }} key={img} />
+            ))}
+
+            {images.length > 2 || selectedChore.status === Keys.COMPLETED ? (
               <></>
             ) : (
               <TouchableOpacity style={styles.camera_box} onPress={takeImage}>
@@ -266,9 +293,12 @@ export default function choreDetail() {
               justifyContent: "space-between",
             }}
           >
-            {((selectedChore?.status === Keys.PENDING && currentRole === "kid") || 
-              ((selectedChore?.status === Keys.PENDING || selectedChore?.status === Keys.IN_PROGRESS) 
-              && currentRole === "parent")) && <TouchableOpacity 
+            {((selectedChore?.status === Keys.PENDING &&
+              currentRole === "kid") ||
+              ((selectedChore?.status === Keys.PENDING ||
+                selectedChore?.status === Keys.IN_PROGRESS) &&
+                currentRole === "parent")) && (
+              <TouchableOpacity
                 style={[styles.btn, { backgroundColor: Colors.GREEN }]}
                 onPress={handleCompleteClicked}
               >
@@ -282,25 +312,27 @@ export default function choreDetail() {
                   <Text style={[styles.text, styles.btn_text]}>Complete</Text>
                 )}
               </TouchableOpacity>
-            }
-            {(selectedChore?.status === Keys.IN_PROGRESS && currentRole === "parent") && <TouchableOpacity 
-                style={[styles.btn, { backgroundColor: Colors.RED }]}
-                onPress={handleRejectClicked}
-              >
-                {btnLoading ? (
-                  <ActivityIndicator
-                    size="small"
-                    color={Colors.WHITE}
-                    style={styles.btnLoader}
-                  />
-                ) : (
-                  <Text style={[styles.text, styles.btn_text]}>Reject</Text>
-                )}
-              </TouchableOpacity>
-            }
+            )}
+            {selectedChore?.status === Keys.IN_PROGRESS &&
+              currentRole === "parent" && (
+                <TouchableOpacity
+                  style={[styles.btn, { backgroundColor: Colors.RED }]}
+                  onPress={handleRejectClicked}
+                >
+                  {btnLoading ? (
+                    <ActivityIndicator
+                      size="small"
+                      color={Colors.WHITE}
+                      style={styles.btnLoader}
+                    />
+                  ) : (
+                    <Text style={[styles.text, styles.btn_text]}>Reject</Text>
+                  )}
+                </TouchableOpacity>
+              )}
           </View>
         </View>
-        )}
+      )}
     </SafeAreaView>
   );
 }
@@ -365,7 +397,7 @@ const styles = StyleSheet.create({
   },
   thumbnail: {
     width: 70,
-    height: 70
+    height: 70,
   },
   loader: {
     marginTop: 20,

@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { 
-  SafeAreaView, 
-  ScrollView, 
-  StyleSheet, 
+import {
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
   Text,
   useWindowDimensions,
   View,
-  ActivityIndicator
+  ActivityIndicator,
 } from "react-native";
 import { TabView } from "react-native-tab-view";
 
@@ -43,19 +43,19 @@ export default function AssignChore() {
     try {
       const current_user = await AsyncStorage.getItem(Keys.CURRENT_USER);
       setCurrentUser(current_user);
-  
+
       const current_role = await AsyncStorage.getItem(Keys.CURRENT_ROLE);
-      setCurrentRole  (current_role);
+      setCurrentRole(current_role);
     } catch (error) {
-      console.log('Error getting current user from async storage:', error);
+      console.log("Error getting current user from async storage:", error);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     GetCurrentUser();
-  },[]);
+  }, []);
 
   useEffect(() => {
     if (currentRole && currentUser && userData?.kids) {
@@ -84,13 +84,9 @@ export default function AssignChore() {
   const renderScene = ({ route }) => {
     switch (route.key) {
       case "first":
-        return <RecommendedChores 
-          selectedKid={selectedKid} 
-        />;
+        return <RecommendedChores selectedKid={selectedKid} />;
       case "second":
-        return <CustomizedChores 
-          selectedKid={selectedKid} 
-        />;
+        return <CustomizedChores selectedKid={selectedKid} />;
       default:
         return null;
     }
