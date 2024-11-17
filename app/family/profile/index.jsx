@@ -1,12 +1,12 @@
 import React, { useContext, useEffect, useState } from "react";
-import { 
+import {
   ActivityIndicator,
   Image,
-  SafeAreaView, 
-  StyleSheet, 
-  Text, 
+  SafeAreaView,
+  StyleSheet,
+  Text,
   TouchableOpacity,
-  View, 
+  View,
 } from "react-native";
 
 // router
@@ -34,25 +34,39 @@ export default function Profile() {
   const navigation = useNavigation();
   const router = useRouter();
   const userData = useUserProvider();
-  
+
   const [selectedProfile, setSelectedProfile] = useState(null);
+  const [currentUser, setCurrentUser] = useState("");
   const [loading, setLoading] = useState(true);
 
   const GetSelectedProfile = async () => {
     try {
-      const selected_profile = await AsyncStorage.getItem(Keys.SELECTED_PROFILE);
+      const selected_profile = await AsyncStorage.getItem(
+        Keys.SELECTED_PROFILE
+      );
       setSelectedProfile(JSON.parse(selected_profile));
     } catch (error) {
       console.error("Error getting async storage update:", error);
     } finally {
       setLoading(false);
     }
-  }
+  };
+
+  const GetCurrentUser = async () => {
+    try {
+      const tmp = await AsyncStorage.getItem(Keys.CURRENT_USER);
+      setCurrentUser(tmp);
+    } catch (error) {
+      console.log("Error getting current user from async storage:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     GetSelectedProfile();
+    GetCurrentUser();
 
-    console.log("From Profile..", userData);
     navigation.setOptions({
       headerShown: true,
       headerTransparent: true,
@@ -83,13 +97,15 @@ export default function Profile() {
       ) : (
         <>
           <View style={styles.img_wrapper}>
-            {selectedProfile && <Image
-              source={{ uri: selectedProfile.image }}
-              style={styles.profile_img}
-              onError={(error) =>
-                console.log("Image load error:", error.nativeEvent.error)
-              }
-            />}
+            {selectedProfile && (
+              <Image
+                source={{ uri: selectedProfile.image }}
+                style={styles.profile_img}
+                onError={(error) =>
+                  console.log("Image load error:", error.nativeEvent.error)
+                }
+              />
+            )}
           </View>
 
           <Text style={styles.headerText}>{selectedProfile?.name}</Text>
@@ -97,18 +113,25 @@ export default function Profile() {
           <FontAwesome name="birthday-cake" size={24} color="black" />
           <Text style={styles.text}>{selectedProfile?.dob}</Text>
 
-          <TouchableOpacity style={styles.icon_wrapper} onPress={signOutUser}>
-            <View style={styles.iconContainer}>
-              <Ionicons
-                name="exit"
-                size={30}
-                color={Colors.PRIMARY}
-                style={styles.icon}
-              />
-            </View>
+          {currentUser &&
+            selectedProfile &&
+            currentUser === selectedProfile.name && (
+              <TouchableOpacity
+                style={styles.icon_wrapper}
+                onPress={signOutUser}
+              >
+                <View style={styles.iconContainer}>
+                  <Ionicons
+                    name="exit"
+                    size={30}
+                    color={Colors.PRIMARY}
+                    style={styles.icon}
+                  />
+                </View>
 
-            <Text style={styles.text2}>Log out</Text>
-          </TouchableOpacity>
+                <Text style={styles.text2}>Log out</Text>
+              </TouchableOpacity>
+            )}
         </>
       )}
     </SafeAreaView>
