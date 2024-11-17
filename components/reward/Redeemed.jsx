@@ -27,7 +27,7 @@ export default function Redeemed({ selectedKid, currentUser, currentRole }) {
     if (userData && currentUser && currentRole) {
       GetAllRedeemedByKid();
     }
-  }, [selectedKid, userData, currentUser, currentRole])
+  }, [selectedKid, userData, currentUser, currentRole]);
 
   // useEffect(() => {
   //   if (selectedKid) {
@@ -70,7 +70,7 @@ export default function Redeemed({ selectedKid, currentUser, currentRole }) {
 
       if (q) {
         const querySnapshot = await getDocs(q);
-  
+
         const redeemedList = querySnapshot.docs.map((doc) => {
           const data = doc.data();
           return {
@@ -80,10 +80,10 @@ export default function Redeemed({ selectedKid, currentUser, currentRole }) {
               : data.redeemDate,
           };
         });
-  
+
         // Sort by redeemDate in descending order (latest date first)
         redeemedList.sort((a, b) => b.redeemDate - a.redeemDate);
-  
+
         setRedeemed(redeemedList);
       }
       setLoader(false);
@@ -124,7 +124,9 @@ export default function Redeemed({ selectedKid, currentUser, currentRole }) {
             style={styles.img}
             source={require("./../../assets/images/money.png")}
           />
-          <Text style={[styles.text, { marginTop: 15 }]}>No redeem made by kids.</Text>
+          <Text style={[styles.text, { marginTop: 15 }]}>
+            No redemptions made by kids.
+          </Text>
         </View>
       )}
     </View>

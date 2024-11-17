@@ -25,7 +25,10 @@ export default function RedeemedItem({ redeemed, selectedKid }) {
                 style={styles.img1}
                 source={require("./../../assets/images/coin.png")}
               />
-              <Text style={styles.point}>{redeemed.point}</Text>
+
+              <Text style={[styles.point, { color: Colors.GREY }]}>
+                {redeemed.point} pts
+              </Text>
             </View>
           </View>
           <View style={styles.date_warpper}>
@@ -71,8 +74,8 @@ const styles = StyleSheet.create({
     height: 50,
   },
   img1: {
-    width: 25,
-    height: 25,
+    width: 20,
+    height: 20,
   },
   btn: {
     width: "25%",

@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
 // context
@@ -32,7 +32,13 @@ import { db } from "../../config/FirebaseConfig";
 // constants
 import Colors from "../../constants/Colors";
 
-export default function RewardItem({ reward, selectedKid, onDelete, currentUser, currentRole }) {
+export default function RewardItem({
+  reward,
+  selectedKid,
+  onDelete,
+  currentUser,
+  currentRole,
+}) {
   const { userData, setUserData } = useContext(UserContext);
   const [loading, setLoading] = useState(false);
 
@@ -168,7 +174,9 @@ export default function RewardItem({ reward, selectedKid, onDelete, currentUser,
                   style={styles.img1}
                   source={require("./../../assets/images/coin.png")}
                 />
-                <Text style={styles.point}>{reward.point}</Text>
+                <Text style={[styles.point, { color: Colors.GREY }]}>
+                  {reward.point} pts
+                </Text>
               </View>
             </View>
           </View>
@@ -217,8 +225,8 @@ const styles = StyleSheet.create({
     height: 50,
   },
   img1: {
-    width: 25,
-    height: 25,
+    width: 20,
+    height: 20,
   },
   btn: {
     width: "25%",
