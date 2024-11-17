@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { 
+import {
   ActivityIndicator,
   Alert,
   SafeAreaView,
   StyleSheet,
-  View
+  View,
 } from "react-native";
 
 // expo
 import { useNavigation } from "expo-router";
 
 // firebase
-import { addDoc, collection } from "firebase/firestore";
+import { collection, query, where, getDocs, addDoc } from "firebase/firestore";
 import { db } from "../../config/FirebaseConfig";
 
 // async storage
@@ -46,10 +46,10 @@ export default function RewardScreen() {
     setCurrentUser(current_user);
 
     const current_role = await AsyncStorage.getItem(Keys.CURRENT_ROLE);
-    setCurrentRole  (current_role);
+    setCurrentRole(current_role);
 
     setIsLoading(false);
-  }
+  };
 
   useEffect(() => {
     GetCurrentUser();
@@ -63,9 +63,7 @@ export default function RewardScreen() {
 
   useEffect(() => {
     if (currentUser && currentRole === "kid" && userData?.kids) {
-      const currentKid = userData.kids.find(
-        (kid) => kid.name === currentUser
-      );
+      const currentKid = userData.kids.find((kid) => kid.name === currentUser);
       setSelectedKid(currentKid);
     } else if (currentRole === "parent" && userData?.kids) {
       setSelectedKid(userData.kids[0]);
@@ -77,21 +75,36 @@ export default function RewardScreen() {
   };
 
   const handleSave = async (rewardName, points) => {
-    console.log(rewardName, points);
     setModalVisible(false);
     setIsListLoading(true);
+    rewardName = rewardName.trim();
 
     try {
-      await addDoc(collection(db, "Rewards"), {
-        family: userData.email,
-        name: rewardName,
-        point: points,
-        status: "Available",
-        createdby: currentUser,
-      });
+      // Check if a document with the same rewardName already exists
+      const q = query(
+        collection(db, "Rewards"),
+        where("family", "==", userData.email),
+        where("name", "==", rewardName)
+      );
 
-      
-      Alert.alert("Reward saved successfully!");
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        Alert.alert(
+          "Duplicate Reward",
+          "A reward with the same name already exists."
+        );
+      } else {
+        await addDoc(collection(db, "Rewards"), {
+          family: userData.email,
+          name: rewardName,
+          point: points,
+          status: "Available",
+          createdby: currentUser,
+        });
+
+        Alert.alert("Success", "Reward saved successfully!");
+      }
     } catch (error) {
       console.error("Error saving reward: ", error);
       Alert.alert("Error saving reward. Please try again.");
@@ -106,51 +119,53 @@ export default function RewardScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.WHITE }}>
-      {isLoading ? <ActivityIndicator
+      {isLoading ? (
+        <ActivityIndicator
           size="small"
           color={Colors.PRIMARY}
           style={styles.loader}
-        />: (
-          <>
-            <View style={styles.container}>
-              <Kids
-                onSelect={OnSelectedKid}
+        />
+      ) : (
+        <>
+          <View style={styles.container}>
+            <Kids
+              onSelect={OnSelectedKid}
+              selectedKid={selectedKid}
+              showPoint={true}
+              currentRole={currentRole}
+            />
+            {isListLoading ? (
+              <ActivityIndicator
+                size="small"
+                color={Colors.PRIMARY}
+                style={styles.listLoader}
+              />
+            ) : (
+              <Rewards
                 selectedKid={selectedKid}
-                showPoint={true}
                 currentRole={currentRole}
+                currentUser={currentUser}
               />
-              {isListLoading ? (
-                <ActivityIndicator
-                  size="small"
-                  color={Colors.PRIMARY}
-                  style={styles.listLoader}
-                />
-              ) : (
-                <Rewards 
-                  selectedKid={selectedKid}
-                  currentRole={currentRole}
-                  currentUser={currentUser}
-                />
-              )}
+            )}
+          </View>
+
+          {/* Add Button */}
+          {currentRole === "parent" && (
+            <View style={styles.footer}>
+              <AddButton handleAddReward={handleAddReward} />
             </View>
-      
-            {/* Add Button */}
-            {currentRole === "parent" && 
-              <View style={styles.footer}>
-                <AddButton handleAddReward={handleAddReward} />
-              </View>
-            }
-      
-            {/* Modal */}
-            {currentRole === "parent" && 
-              <AddReward
-                isVisible={isModalVisible}
-                onClose={handleAddReward}
-                onSave={handleSave}
-              />
-            }
-          </>
-        )}
+          )}
+
+          {/* Modal */}
+          {currentRole === "parent" && (
+            <AddReward
+              isVisible={isModalVisible}
+              onClose={handleAddReward}
+              onSave={handleSave}
+            />
+          )}
+        </>
+      )}
     </SafeAreaView>
   );
 }
