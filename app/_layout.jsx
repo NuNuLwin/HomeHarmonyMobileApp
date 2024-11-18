@@ -27,11 +27,9 @@ export default function RootLayout() {
       <SignUpContext.Provider value={{ signUpData, setSignUpData }}>
         <UserProvider>
           <ChoreContext.Provider value={{ choreData, setChoreData }}>
-            <NavigationContainer>
-              <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="(tabs)" />
-              </Stack>
-            </NavigationContainer>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(tabs)" />
+            </Stack>
           </ChoreContext.Provider>
         </UserProvider>
       </SignUpContext.Provider>

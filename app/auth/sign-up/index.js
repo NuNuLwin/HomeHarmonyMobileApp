@@ -16,6 +16,7 @@ export default function SignUp() {
   const navigation = useNavigation();
   const [step, setStep] = useState(0);
   const { signUpData, setSignUpData } = useContext(SignUpContext);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     navigation.setOptions({
@@ -91,14 +92,16 @@ export default function SignUp() {
         {step === 3 && (
           <View>
             <Progressindicator size="1.0" />
-            <CreateKidProfile />
+            <CreateKidProfile 
+              onSignUp={() => setIsProcessing(!isProcessing)}
+            />
           </View>
         )}
 
         <FooterButtons
-          showBackButton={step > 0}
+          showBackButton={step > 0 && !isProcessing}
           handleBackButtonClicked={handlePreviousButtonPressed}
-          showNextButton={step < 3}
+          showNextButton={step < 3 && !isProcessing}
           handleNextButtonClicked={handleNextButtonPressed}
         />
 

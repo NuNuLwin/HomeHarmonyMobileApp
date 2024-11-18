@@ -27,7 +27,11 @@ import * as ImagePicker from "expo-image-picker";
 // context
 import { SignUpContext } from "../../contexts/SignUpContext.jsx";
 
-export default function CreateKidProfile() {
+// icons
+import Entypo from "@expo/vector-icons/Entypo";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+
+export default function CreateKidProfile({ onSignUp }) {
   const [count, setCount] = useState(1);
   const { signUpData, setSignUpData } = useContext(SignUpContext);
   const [loading, setLoading] = useState(false);
@@ -164,6 +168,7 @@ export default function CreateKidProfile() {
     } else {
       try {
         // Create user with email and password
+        onSignUp();
         setLoading(true);
         const userCredential = await createUserWithEmailAndPassword(
           auth,
@@ -185,6 +190,7 @@ export default function CreateKidProfile() {
         router.replace("/family/userlist");
       } catch (error) {
         setLoading(false);
+        onSignUp();
         const errorCode = error.code;
         const errorMessage = error.message;
 
@@ -234,19 +240,39 @@ export default function CreateKidProfile() {
 
       {kids.map((kid, index) => (
         <View key={index} style={styles.box}>
-          <TouchableOpacity
-            style={styles.img_wrapper}
-            onPress={() => pickImage(index)}
+          <View
+            style={image ? styles.img_wrapper : styles.img_wrapper_default}
           >
-            {kid.image && (
+            {kid.image ? (
               <Image
                 source={{
                   uri: kid.image,
                 }}
                 style={styles.profile_img}
               />
+            ): (
+              <FontAwesome5 name="user" size={40} color="grey" />
             )}
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                position: "absolute",
+                right: 0,
+                bottom: 0,
+                width: 25,
+                height: 25,
+                borderRadius: 50,
+                borderWidth: 1,
+                borderColor: Colors.GREY,
+                backgroundColor: Colors.LIGHT_GREY,
+                alignSelf: "center",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+              onPress={() => pickImage(index)}
+            >
+              <Entypo name="edit" size={13} color="black" />
+            </TouchableOpacity>
+          </View>
           <View style={{ flex: 1 }}>
             <TextInput
               style={styles.input}
@@ -315,6 +341,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.GREY,
     backgroundColor: Colors.WHITE,
+  },
+  img_wrapper_default: {
+    width: 80,
+    height: 80,
+    marginRight: 10,
+    borderRadius: 50,
+    borderWidth: 1,
+    borderColor: Colors.LIGHT_GREY,
+    backgroundColor: Colors.WHITE,
+    padding: 10,
+    alignSelf: "center",
+    justifyContent: "center",
+    alignItems: "center",
   },
   input: {
     padding: 10,

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Image,
+  Modal,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -10,8 +10,16 @@ import {
   View,
 } from "react-native";
 
-// router
+// expo
 import { useNavigation, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+
+// image
+import Image from 'react-native-image-progress';
+import * as ImageManipulator from 'expo-image-manipulator';
+import * as ImagePicker from "expo-image-picker";
+import ImageViewer from "react-native-image-zoom-viewer";
+import { Pie } from "react-native-progress";
 
 // firebase
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
@@ -20,9 +28,6 @@ import { db, storage } from "../../config/FirebaseConfig";
 
 // async storage
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-// image picker
-import * as ImagePicker from "expo-image-picker";
 
 // icons
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -47,6 +52,8 @@ export default function choreDetail() {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [btnLoading, setBtnLoading] = useState(false);
+  const [showImagePreview, setShowImagePreview] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(-1);
 
   const CHORE_FOLDER = Folders.CHORE_FOLDER;
 
@@ -88,6 +95,7 @@ export default function choreDetail() {
     GetSelectedChore();
   }, []);
 
+  /* Image Manipulation */
   const doUploadImage = async (uri, uploadProgress) => {
     const response = await fetch(uri);
     const blob = await response.blob();
@@ -131,11 +139,16 @@ export default function choreDetail() {
       // On iPhone, modal does not appear when camera dialog is closed
       setTimeout(async () => {
         try {
+          const thumbnail = await ImageManipulator.manipulateAsync(
+            result.assets[0].uri, [],
+            { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG }
+          );
+
           setShowModal(true);
-          setImage(result.assets[0].uri);
+          setImage(thumbnail.uri);
 
           // Wrap in try...catch to catch errors in uploadImage or Firestore update
-          const file_url = await uploadImage(result.assets[0].uri, "image");
+          const file_url = await uploadImage(thumbnail.uri, "image");
           let copiedImages = [...images];
           copiedImages.push(file_url);
           setImages(copiedImages);
@@ -161,6 +174,7 @@ export default function choreDetail() {
     }
   };
 
+  /* Click Events */
   const handleCompleteClicked = async () => {
     if (btnLoading) return;
 
@@ -204,6 +218,97 @@ export default function choreDetail() {
     }
   };
 
+  /* Components */
+  const ChoreImageItem = (img, index) => {
+    return (
+      <View
+        style={{
+          justifyContent: "center",
+          alignItems: "center"
+        }}
+        key={index}
+      >
+        <TouchableOpacity 
+          style={styles.thumbnail} 
+          onPress={() => {
+            setSelectedImage(index);
+            setShowImagePreview(true);
+            console.log('=== selected image ===', index);
+          }}
+          key={index}
+        >
+          <Image 
+            source={{ uri: img }}
+            style={{ flex: 1 }}
+            indicator={Pie}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={async () => {
+            setLoading(true);
+
+            let copiedImages = [...images];
+            copiedImages.splice(index, 1);
+            setImages(copiedImages);
+
+            await updateDoc(doc(db, "AssignChores", selectedChore.id), {
+              images: copiedImages,
+            });
+
+            setLoading(false);
+
+          }}
+        >
+          <Text
+            style={{
+              color: Colors.RED,
+              paddingTop: 5
+            }}
+          >Remove</Text>
+        </TouchableOpacity>
+      </View>
+    )
+  }
+
+  const ImagePreviewModal = () => {
+    return (
+      <Modal 
+        visible={showImagePreview} 
+        transparent={false}
+        style={{
+          backgroundColor: "black",
+        }}
+      >
+        <TouchableOpacity
+            onPress={() => setShowImagePreview(false)}
+            style={{
+              position: "absolute",
+              top: StatusBar.length + 40,
+              right: 10,
+              width: 44,
+              height: 44,
+              backgroundColor: "black",
+              justifyContent: "center",
+              alignItems: "center",
+              borderRadius: 25,
+              zIndex: 2
+            }}
+        >
+            <Ionicons name="close-outline" size={24} color="white" />
+        </TouchableOpacity>
+        <ImageViewer 
+          imageUrls={[{url: images[selectedImage]}]}
+          renderImage={(props) => <Image
+            {...props} indicator={Pie} />}
+          renderIndicator={() => <View></View>}
+          style={{
+            backgroundColor: "black",
+          }}
+        />
+      </Modal>
+    )
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.WHITE }}>
       {loading ? (
@@ -228,6 +333,7 @@ export default function choreDetail() {
           <View style={styles.img_wrapper}>
             <Image
               style={styles.img}
+              indicator={Pie}
               source={
                 selectedChore?.chore?.image
                   ? { uri: selectedChore.chore.image }
@@ -265,6 +371,8 @@ export default function choreDetail() {
             <Uploading image={image} progress={progress} />
           ) : null}
 
+          <ImagePreviewModal />
+
           <View
             style={{
               gap: 10,
@@ -273,9 +381,7 @@ export default function choreDetail() {
               flexDirection: "row",
             }}
           >
-            {images.map((img) => (
-              <Image style={styles.thumbnail} source={{ uri: img }} key={img} />
-            ))}
+            {images.map((img, index) => ChoreImageItem(img, index))}
 
             {images.length > 2 || selectedChore.status === Keys.COMPLETED ? (
               <></>
@@ -381,6 +487,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "20%",
     borderRadius: 10,
+    height: 70,
+    alignSelf: "flex-start"
   },
   btn: {
     borderRadius: 20,

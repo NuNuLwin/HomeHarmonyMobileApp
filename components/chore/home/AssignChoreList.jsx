@@ -48,7 +48,6 @@ export default function AssignChoreList({ currentUser, currentRole }) {
 
   useEffect(() => {
     if (userData && currentUser && currentRole) {
-      console.log(`userData: ${userData}, current_user: ${currentUser}, current_role: ${currentRole}`);
       GetAssignChoreList(Keys.PENDING);
     }
   }, [isFocused, userData, currentUser, currentRole]);
@@ -63,7 +62,6 @@ export default function AssignChoreList({ currentUser, currentRole }) {
     setLoader(true);
     
     try {
-      console.log('=== TESTING => 1 ===', currentRole);
       let q = "";
       if (currentRole === "parent") {
         q = query(
@@ -114,7 +112,6 @@ export default function AssignChoreList({ currentUser, currentRole }) {
         }
       });
 
-      console.log('=== TESTING => 2 ===', assignedChores);
       setAssignedChoreList(assignedChores);
       setLoader(false);
 

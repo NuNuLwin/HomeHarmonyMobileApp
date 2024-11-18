@@ -40,6 +40,7 @@ export default function CreateAccount() {
           value={email}
           placeholder="Enter Email"
           onChangeText={(val) => setEmail(val)}
+          autoCapitalize={'none'}
         ></TextInput>
       </View>
 
