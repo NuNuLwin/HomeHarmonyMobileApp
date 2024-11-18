@@ -1,27 +1,40 @@
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
+  Alert,
+  Dimensions,
+  ImageBackground,
+  Modal,
+  Pressable,
+  Platform,
   SafeAreaView,
   StyleSheet,
-  ImageBackground,
-  Dimensions,
+  Text,
   TextInput,
-  Pressable,
-  Modal,
-  Platform,
   TouchableOpacity,
-  Alert,
+  View,
 } from "react-native";
-import React, { useEffect, useState } from "react";
-import Colors from "../../constants/Colors";
-import { useNavigation } from "expo-router";
+
+// router
+import { useRouter, useNavigation } from "expo-router";
+
+// context
+import { useUserProvider } from "../../contexts/UserContext";
+
+// datetime picker
 import DateTimePicker from "@react-native-community/datetimepicker";
 
+// firebase
 import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../config/FirebaseConfig";
 
+// constants
+import Colors from "../../constants/Colors";
+
 export default function addEvent() {
   const navigation = useNavigation();
+  const userData = useUserProvider();
+  const router = useRouter();
+
   const [eventName, setEventName] = useState();
   const [eventPlace, setEventPlace] = useState();
   const [date, setDate] = useState(new Date());
@@ -56,9 +69,10 @@ export default function addEvent() {
     try {
       // Check if a document with the same event name already exists
       const q = query(
-        collection(db, "events"),
+        collection(db, "Events"),
         where("eventName", "==", eventName),
-        where("eventPlace", "==", eventPlace)
+        where("eventPlace", "==", eventPlace),
+        where("family", "==", userData.email),
       );
 
       const querySnapshot = await getDocs(q);
@@ -80,10 +94,13 @@ export default function addEvent() {
           eventPlace: eventPlace,
           date: date.toISOString(),
           time: time.toISOString(),
+          family: userData.email,
           createdAt: new Date().toISOString(),
         });
 
-        Alert.alert("Success", "Event saved successfully!");
+        Alert.alert("Success", "Event saved successfully!", [
+          { text: "OK", onPress: () => router.replace({ pathname: "/calendar" }) },
+        ]);
       }
     } catch (error) {
       console.error("Error saving event: ", error);

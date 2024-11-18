@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -8,16 +8,90 @@ import {
   View,
 } from "react-native";
 
+// firebase
+import { collection, query, where, getDocs, orderBy, deleteDoc, doc } from "firebase/firestore";
+import { db } from "../../config/FirebaseConfig";
+
+// context
+import { useUserProvider } from "../../contexts/UserContext";
+
+// async storage
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+// router
+import { useRouter } from "expo-router";
 import { Agenda } from "react-native-calendars";
 
-import moment from "moment";
 import Colors from "../../constants/Colors";
 import Feather from "@expo/vector-icons/Feather";
-import { useRouter } from "expo-router";
+import Keys from "../../constants/Keys";
+
+import moment from "moment";
 
 export default function calendar() {
-  const [items, setItems] = useState({});
   const router = useRouter();
+
+  const [items, setItems] = useState({});
+  const userData = useUserProvider();
+  const [loading, setLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [currentRole, setCurrentRole] = useState(null);
+
+  const GetCurrentUser = async () => {
+    try {
+      const current_user = await AsyncStorage.getItem(Keys.CURRENT_USER);
+      setCurrentUser(current_user);
+  
+      const current_role = await AsyncStorage.getItem(Keys.CURRENT_ROLE);
+      setCurrentRole  (current_role);
+    } catch (error) {
+      console.error("Error getting async storage update:", error);
+    }
+  }
+
+  const GetEvents = async () => {
+    try {
+      setLoading(true);
+      let tmpItems = {};
+      const _date = Date.now();
+      for (let i = -15; i < 15; i++) {
+        const time = _date + i * 24 * 60 * 60 * 1000;
+        const strTime = timeToString(time);
+        tmpItems[strTime] = [];
+      }
+
+      const q = query(
+        collection(db, "Events"),
+        where("family", "==", userData.email),
+        orderBy("createdAt", "desc")
+      );
+      const querySnapshot = await getDocs(q);
+
+      querySnapshot.docs.map((doc) => {
+        let tmp = {
+          id: doc.id,
+          ...doc.data(),
+        }
+        let event_date = moment(tmp.date).format('YYYY-MM-DD');
+        if (event_date in tmpItems) {
+          tmpItems[event_date].push(tmp);
+        } else {
+          tmpItems[event_date] = [tmp];
+        }
+
+        return tmp
+      });
+      setItems(tmpItems);
+    } catch (error) {
+      console.error("Error fetching chores: ", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    GetCurrentUser();
+  }, []);
 
   const timeToString = (time) => {
     const date = new Date(time);
@@ -28,73 +102,55 @@ export default function calendar() {
     router.push({ pathname: "/calendar/addEvent" });
   };
 
+  const handleDeleteEvent = async (item) => {
+    setLoading(true);
+    try {
+      await deleteDoc(doc(db, "Events", item.id));
+      Alert.alert("Success", "Event deleted successfully!", [
+        { text: "OK", onPress: () => GetEvents() },
+      ]);
+    } catch (error) {
+      console.log(`Error deleting the event: ${item.id}`);
+      Alert.alert("Error deleting the event!");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const handleRenderItem = (item, isFirst) => {
     return (
       <View style={[styles.item, { height: item.height }]}>
         <View style={styles.itemDetails}>
-          <Text style={styles.itemTime}>{item.time}</Text>
-          <Text style={styles.itemTitle}>{item.name}</Text>
+          <Text style={styles.itemTime}>
+            {item.time ? moment(item.time).format('h:mm a').toUpperCase() : ""}
+          </Text>
+          <Text style={styles.itemTitle}>{item.eventName}</Text>
         </View>
         <View style={styles.itemDetails}>
           <Image
             style={styles.icon}
             source={require("../../assets/images/location_on.png")}
           />
-          <Text>{item.location}</Text>
+          <Text>{item.eventPlace}</Text>
         </View>
         <View style={styles.itemDetails}>
           <Image
             style={styles.icon}
             source={require("../../assets/images/person.png")}
           />
-          <Text>{item.occupancy}</Text>
+          <Text>{item?.occupancy || 0} guests</Text>
         </View>
-        <TouchableOpacity
+        {currentRole === "parent" && <TouchableOpacity
           style={styles.deleteIcon}
-          onPress={() => Alert.alert(item.name + " deleted!")}
+          onPress={() => handleDeleteEvent(item)}
         >
           <Image
             style={styles.icon}
             source={require("../../assets/images/delete.png")}
           />
-        </TouchableOpacity>
+        </TouchableOpacity>}
       </View>
     );
-  };
-
-  const loadItems = () => {
-    const _date = Date.now();
-    for (let i = -5; i < 5; i++) {
-      const time = _date + i * 24 * 60 * 60 * 1000;
-      const strTime = timeToString(time);
-
-      if (!items[strTime]) {
-        items[strTime] = [];
-
-        // if (i > -7 && i < 7) {
-        //   continue;
-        // }
-
-        const numItems = Math.floor(Math.random() * 3 + 1);
-        for (let j = 0; j < numItems; j++) {
-          items[strTime].push({
-            name: "Birthday " + "#" + (j + 1),
-            height: 100,
-            day: strTime,
-            time: "10:00 AM",
-            location: "Dragon Restaurant",
-            occupancy: "10 guests",
-          });
-        }
-      }
-
-      const newItems = {};
-      Object.keys(items).forEach((key) => {
-        newItems[key] = items[key];
-      });
-
-      setItems(newItems);
-    }
   };
 
   const handleRenderEmptyDate = () => {
@@ -112,7 +168,7 @@ export default function calendar() {
         // Specify how each item should be rendered in agenda
         renderItem={handleRenderItem}
         // Callback that gets called when items for a certain month should be loaded (month became visible)
-        loadItemsForMonth={loadItems}
+        loadItemsForMonth={GetEvents}
         // Initially selected day
         selected={moment(new Date()).format("YYYY-MM-DD")}
         // Specify how empty date content with no items should be rendered
@@ -121,7 +177,7 @@ export default function calendar() {
         showClosingKnob={false}
         // Specify your item comparison function for increased performance
         rowHasChanged={(r1, r2) => {
-          return r1.name !== r2.name;
+          return r1.id !== r2.id;
         }}
         theme={{
           agendaDayTextColor: "#000000",
@@ -130,11 +186,11 @@ export default function calendar() {
           agendaKnobColor: "blue",
         }}
       />
-      <View style={styles.btnWrapper}>
+      {currentRole === "parent" && <View style={styles.btnWrapper}>
         <TouchableOpacity style={styles.btn} onPress={handleAddEvent}>
           <Feather name="plus" size={30} color="white" />
         </TouchableOpacity>
-      </View>
+      </View>}
     </View>
   );
 }
