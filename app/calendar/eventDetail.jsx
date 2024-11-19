@@ -1,15 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { 
   ActivityIndicator,
+  Alert,
   Dimensions,
   FlatList,
+  Keyboard,
+  KeyboardAvoidingView,
   Image,
   ImageBackground,
   Modal,
+  Platform,
   SafeAreaView,
+  StatusBar,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View
 } from "react-native";
 
@@ -26,6 +33,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // contacts
 import * as Contacts from "expo-contacts";
 
+// sms
+import * as SMS from "expo-sms";
+
 // constants
 import Colors from "../../constants/Colors";
 import Keys from "../../constants/Keys";
@@ -37,12 +47,18 @@ export default function eventDetail () {
 
   const [currentRole, setCurrentRole] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [modalLoading, setModalLoading] = useState(false);
   const [guestList, setGuestList] = useState([]);
   const [contactList, setContactList] = useState([]);
   const [showGuestList, setShowGuestList] = useState(false);
+  const [message, setMessage] = useState("");
+  const [hideStuff, setHideStuff] = useState(false);
+  
+  const [loading, setLoading] = useState(true);
+  const [modalLoading, setModalLoading] = useState(false);
   const [guestLoading, setGuestLoading] = useState(false);
+  const [smsLoading, setSmsLoading] = useState(false);
+
+  const messageRef = useRef(null);
 
   const getSelectedEvent = async () => {
     try {
@@ -55,6 +71,17 @@ export default function eventDetail () {
         id: selected_event.id,
         ...docSnap.data(),
       };
+      if (selected_event?.message) {
+        setMessage(selected_event.message);
+      } else {
+        setMessage("Dear Friends,\n" +
+          "We are excited to invite you to celebrate " +
+          `${selected_event.eventName} with us on ${moment(selected_event.date).format('MMMM DD, YYYY')}, ` + 
+          `at ${moment(selected_event.time).format('h:mm a').toUpperCase()}. ` +
+          `The celebration will take place at ${selected_event.eventPlace}.\n` +
+          "We hope to see you there!"
+        );
+      }
       setGuestList(selected_event.guests);
       setSelectedEvent(selected_event);
       if (selected_event.guests) {
@@ -83,14 +110,15 @@ export default function eventDetail () {
     data.forEach(x => {
       let firstName = x.firstName || "";
       let lastName = x.lastName || "";
+      let middleName = x.middleName || "";
       let phones = [];
 
       x.phoneNumbers?.forEach(y => phones.push(y.number));
-      // console.log(`firstName: ${firstName}, lastName: ${lastName}, phones: ${phones}`);
 
       if (phones) {
         let item = {
           first_name: firstName,
+          middle_name: middleName,
           last_name: lastName,
           phones
         };
@@ -118,8 +146,75 @@ export default function eventDetail () {
       setGuestList(copied);
     } catch (error) {
       console.log("Adding guest error:", error);
+      Alert.alert("Error adding the guest!");
     } finally {
       setGuestLoading(false);
+    }
+  }
+
+  const handleDeleteGuest = async (item) => {
+    setGuestLoading(true);
+
+    try {
+      let copied = guestList.filter(x => x.first_name === item.first_name &&
+        x.middle_name === item.middle_name && 
+        x.last_name === item.last_name);
+      await updateDoc(doc(db, "Events", selectedEvent.id), { guests: copied });
+      setGuestList(copied);
+    } catch (error) {
+      console.log("Deleting guest error:", error);
+      Alert.alert("Error deleting the guest!");
+    } finally {
+      setGuestLoading(false);
+    }
+  }
+
+  const updateMessage = async () => {
+    try {
+      await updateDoc(doc(db, "Events", selectedEvent.id), { message: message });
+    } catch (error) {
+      console.log("Deleting guest error:", error);
+    }
+  }
+
+  const handleSendMessage = async () => {
+    if (smsLoading) return;
+
+    setSmsLoading(true);
+
+    const contactPhones = [];
+    guestList.forEach(x => {
+      if (x.phones) {
+        contactPhones.push(...x.phones);
+      }
+    });
+
+    // console.log('=== message ===', message);
+    // console.log('=== contactPhones ===', contactPhones);
+
+    const result = await SMS.isAvailableAsync();
+    if (result) {
+      const { result: sendResult } = await SMS.sendSMSAsync(
+        contactPhones,
+        message
+      );
+
+      if (sendResult === "sent") {
+        Alert.alert("Sucess", "Message sent successfully!", [
+          { text: "OK", onPress: async () => { 
+            await updateMessage();
+            setSmsLoading(false);
+          } },
+        ]);
+      } else {
+        Alert.alert("Error", "Message failed to send!", [
+          { text: "OK", onPress: () => setSmsLoading(false) },
+        ]);
+      }
+    } else {
+      Alert.alert("Fail", "Service not available!", [
+        { text: "OK", onPress: () => setSmsLoading(false) },
+      ]);
     }
   }
 
@@ -128,7 +223,7 @@ export default function eventDetail () {
     if (!guestList) return false;
 
     return guestList.some(
-      guest => guest.first_name === item.first_name && guest.last_name === item.last_name
+      guest => guest.first_name === item.first_name && guest.middle_name === item.middle_name && guest.last_name === item.last_name
     );
   }
 
@@ -142,6 +237,7 @@ export default function eventDetail () {
         </View>
         <TouchableOpacity
           style={styles.deleteIcon}
+          onPress={handleDeleteGuest}
         >
           <Image
             style={styles.icon}
@@ -156,7 +252,7 @@ export default function eventDetail () {
     return (
       <View style={styles.contact_wrapper}>
         <View style={styles.contact_info}>
-          <Text style={styles.contact_info_name}>{`${item.first_name} ${item.last_name}`}</Text>
+          <Text style={styles.contact_info_name}>{`${item.first_name} ${item.middle_name} ${item.last_name}`}</Text>
           <Text style={styles.contact_info_phone}>{item.phones ? item.phones.join(", ") : ""}</Text>
         </View>
         {checkIfInvitationExists(item) ? (
@@ -184,53 +280,74 @@ export default function eventDetail () {
   }, []);
 
   return (
+    // <KeyboardAvoidingView
+    //   behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    //   style={{ flex: 1, backgroundColor: "red" }}
+    //   keyboardVerticalOffset={Platform.select({
+    //     ios: () => 60,
+    //     android: () => 60
+    //  })()}
+    // >
       <SafeAreaView style={styles.container}>
-        {loading ? (
-          <ActivityIndicator
-            size="small"
-            color={Colors.PRIMARY}
-            style={styles.loader}
-          />
-        ) : (
-        <>
-          <ImageBackground
-              style={styles.img}
-              source={require("./../../assets/images/event.jpg")}
-          >
-              <Text style={styles.title}>{selectedEvent?.eventName}</Text>
-          </ImageBackground>
-          <View style={styles.info_box}>
-              <Text style={styles.info_text}>Event Info</Text>
-              <View style={styles.input_wrapper}>
-                <Text style={styles.input_text}>
-                    {selectedEvent?.eventName}
-                </Text>
-              </View>
-
-              <View style={styles.input_wrapper}>
-                <Text style={styles.input_text}>
-                    {selectedEvent?.eventPlace}
-                </Text>
-              </View>
-
-              <View style={styles.input_wrapper_2}>  
-                <View style={styles.input_wrapper_2_child}>
-                  <Text style={[styles.input_text, { textAlign: "center" }]}>
-                      {moment(selectedEvent?.date).format("YYYY-MM-DD")}
+        <TouchableOpacity
+          style={{ flex: 1 }}
+          activeOpacity={1} 
+          onPress={() => {
+            setHideStuff(false);
+            Keyboard.dismiss();
+          }}
+        >
+          {loading ? (
+            <ActivityIndicator
+              size="small"
+              color={Colors.PRIMARY}
+              style={styles.loader}
+            />
+          ) : (
+          <>
+            <ImageBackground
+                style={styles.img}
+                source={require("./../../assets/images/event.jpg")}
+            >
+                <Text style={styles.title}>{selectedEvent?.eventName}</Text>
+            </ImageBackground>
+            {!hideStuff && <View style={styles.info_box}>
+                <Text style={styles.info_text}>Event Info</Text>
+                <View style={styles.input_wrapper}>
+                  <Text style={styles.input_text}>
+                      {selectedEvent?.eventName}
                   </Text>
                 </View>
 
-                <View style={styles.input_wrapper_2_child}>
-                  <Text style={[styles.input_text, { textAlign: "center" }]}>
-                      {moment(selectedEvent?.date).format('h:mm a').toUpperCase()}
+                <View style={styles.input_wrapper}>
+                  <Text style={styles.input_text}>
+                      {selectedEvent?.eventPlace}
                   </Text>
                 </View>
+
+                <View style={styles.input_wrapper_2}>  
+                  <View style={styles.input_wrapper_2_child}>
+                    <Text style={[styles.input_text, { textAlign: "center" }]}>
+                        {moment(selectedEvent?.date).format("YYYY-MM-DD")}
+                    </Text>
+                  </View>
+
+                  <View style={styles.input_wrapper_2_child}>
+                    <Text style={[styles.input_text, { textAlign: "center" }]}>
+                        {moment(selectedEvent?.time).format('h:mm a').toUpperCase()}
+                    </Text>
+                  </View>
+                </View>
+            </View>}
+
+            {!hideStuff && <View style={styles.info_box_2}>
+              <View style={styles.info_box_header}>
+                <Image
+                  style={[styles.invitation_img, { width: 26, height: 26 }]}
+                  source={require('../../assets/images/celebration.jpg')}
+                />
+                <Text style={[styles.info_text, { marginBottom: 0 }]}>{guestList?.length > 0 ? `Guest List (${guestList.length})` : "Invite Others"}</Text>
               </View>
-          </View>
-
-          <View style={styles.info_box_2}>
-              <Text style={styles.info_text}>Invite Others</Text>
-
               {guestLoading ? (
                   <ActivityIndicator
                     size="small"
@@ -259,54 +376,85 @@ export default function eventDetail () {
                   />
                 )}
 
-            {currentRole === "parent" && <TouchableOpacity style={styles.btn} onPress={async () => { 
-              setShowGuestList(true);
-              await getContactList();
-            }}>
-              <Text style={styles.btn_text}>Invite</Text>
-            </TouchableOpacity>}
-          </View>
+              {currentRole === "parent" && <TouchableOpacity style={styles.btn} onPress={async () => { 
+                setShowGuestList(true);
+                await getContactList();
+              }}>
+                <Text style={styles.btn_text}>Invite</Text>
+              </TouchableOpacity>}
+            </View>}
+            
+            {guestList?.length > 0 ? (
+              <View style={[styles.info_box_2, { marginTop: hideStuff ? -90 : 10 }]}>
+                  <View style={styles.info_box_header}>
+                    <Image
+                      style={[styles.invitation_img, { width: 26, height: 26 }]}
+                      source={require('../../assets/images/comments.jpg')}
+                    />
+                    <Text style={[styles.info_text, { marginBottom: 0 }]}>Message</Text>
+                  </View>
+                    <TextInput
+                      ref={messageRef}
+                      placeholder="Message for SMS..."
+                      style={styles.sms_message_input}
+                      multiline={true}
+                      numberOfLines={4}
+                      editable={!smsLoading}
+                      onChangeText={(val) => setMessage(val)}
+                      value={message}
+                      onFocus={() => setHideStuff(true)}
+                    />
 
-          <Modal
-            visible={showGuestList}
-            transparent={true}
-          >
-            <View style={styles.modalOverlay}>
-              <View style={styles.bottomModal}>
-                <Text style={styles.info_text}>Add Guest</Text>
+                    {(currentRole === "parent") && <TouchableOpacity 
+                      style={styles.btn} 
+                      onPress={handleSendMessage}
+                    >
+                      <Text 
+                        style={styles.btn_text}>{smsLoading ? "Sending..." : "Send Message"}</Text>
+                    </TouchableOpacity>}
+              </View>) : null}
 
-                {modalLoading ? (
-                  <ActivityIndicator
-                    size="small"
-                    color={Colors.PRIMARY}
-                    style={styles.loader}
-                  />
-                ) : (
-                  <FlatList
-                    data={contactList.filter(x => !checkIfInvitationExists(x))}
-                    keyExtractor={(item, index) => index.toString()}
-                    ItemSeparatorComponent={renderSeparator}
-                    renderItem={({ item }) => (
-                      <ContactItem
-                        item={item}
-                      />
-                    )}
-                    ListEmptyComponent={() => (
-                      <View style={styles.no_contact_text_wrapper}>
-                        <Text style={styles.no_contact_text}>No contacts available</Text>
-                      </View>
-                    )}
-                  />
-                )}
+            <Modal
+              visible={showGuestList}
+              transparent={true}
+            >
+              <View style={styles.modalOverlay}>
+                <View style={styles.bottomModal}>
+                  <Text style={styles.info_text}>Add Guest</Text>
 
-                <TouchableOpacity style={styles.btn} onPress={() => setShowGuestList(false)}>
-                  <Text style={styles.btn_text}>Done</Text>
-                </TouchableOpacity>
+                  {modalLoading ? (
+                    <ActivityIndicator
+                      size="small"
+                      color={Colors.PRIMARY}
+                      style={styles.loader}
+                    />
+                  ) : (
+                    <FlatList
+                      data={contactList.filter(x => !checkIfInvitationExists(x))}
+                      keyExtractor={(item, index) => index.toString()}
+                      ItemSeparatorComponent={renderSeparator}
+                      renderItem={({ item }) => (
+                        <ContactItem
+                          item={item}
+                        />
+                      )}
+                      ListEmptyComponent={() => (
+                        <View style={styles.no_contact_text_wrapper}>
+                          <Text style={styles.no_contact_text}>No contacts available</Text>
+                        </View>
+                      )}
+                    />
+                  )}
+
+                  <TouchableOpacity style={styles.btn} onPress={() => setShowGuestList(false)}>
+                    <Text style={styles.btn_text}>Done</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          </Modal>
-        </>
-        )}
+            </Modal>
+          </>
+          )}
+        </TouchableOpacity>
       </SafeAreaView>
   )
 
@@ -330,11 +478,12 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: Colors.WHITE,
     textAlign: "center",
+    marginTop: StatusBar.length - 80
   },
   info_box: {
     backgroundColor: Colors.WHITE,
     padding: 15,
-    marginTop: -20,
+    marginTop: -90,
     marginHorizontal: 10,
     borderRadius: 10,
     shadowColor: "#000",
@@ -342,6 +491,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    height: "28%",
   },
   info_box_2: {
     backgroundColor: Colors.WHITE,
@@ -354,6 +504,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    maxHeight: "32%"
+  },
+  info_box_header: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    gap: 10,
+    height: 30,
+    marginBottom: 20,
   },
   info_text: {
     fontFamily: "outfit-regular",
@@ -397,7 +556,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-end",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
-    height: "50%",
     marginBottom: 20,
   },
   bottomModal: {
@@ -405,6 +563,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
+    maxHeight: "50%",
   },
   datePicker: {
     height: 200,
@@ -499,4 +658,11 @@ const styles = StyleSheet.create({
     padding: 30, 
     alignItems: "center" 
   },
+  sms_message_input: {
+    borderWidth: 1,
+    borderColor: Colors.LIGHT_GREY,
+    borderRadius: 10,
+    padding: 10,
+    height: 80,
+  }
 });
