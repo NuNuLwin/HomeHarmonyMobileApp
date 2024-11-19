@@ -6,4 +6,5 @@ export default {
     IN_PROGRESS: "In-Progress",
     COMPLETED: "Completed",
     SELECTED_CHORE: "selected-chore",
+    SELECTED_EVENT: "selected-event",
 }

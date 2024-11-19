@@ -119,7 +119,13 @@ export default function calendar() {
 
   const handleRenderItem = (item, isFirst) => {
     return (
-      <View style={[styles.item, { height: item.height }]}>
+      <TouchableOpacity 
+        style={[styles.item, { height: item.height }]}
+        onPress={async () => {
+          await AsyncStorage.setItem(Keys.SELECTED_EVENT, JSON.stringify(item));
+          router.push({ pathname: "/calendar/eventDetail" });
+        }}
+      >
         <View style={styles.itemDetails}>
           <Text style={styles.itemTime}>
             {item.time ? moment(item.time).format('h:mm a').toUpperCase() : ""}
@@ -149,7 +155,7 @@ export default function calendar() {
             source={require("../../assets/images/delete.png")}
           />
         </TouchableOpacity>}
-      </View>
+      </TouchableOpacity>
     );
   };
 
