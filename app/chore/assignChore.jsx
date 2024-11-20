@@ -8,7 +8,7 @@ import {
   View,
   ActivityIndicator,
 } from "react-native";
-import { TabView } from "react-native-tab-view";
+import { TabBar, TabView } from "react-native-tab-view";
 
 // context
 import { useUserProvider } from "../../contexts/UserContext";
@@ -97,6 +97,13 @@ export default function AssignChore() {
     { key: "second", title: "Customized" },
   ];
 
+  const renderTabBar = (props) => (
+    <TabBar
+      {...props}
+      indicatorStyle={{ backgroundColor: "black" }}
+      style={{ color: Colors.GREY }}
+    />
+  );
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.WHITE }}>
       {loading ? (
@@ -123,6 +130,7 @@ export default function AssignChore() {
           <TabView
             // swipeEnabled={false}
             navigationState={{ index, routes }}
+            renderTabBar={renderTabBar}
             renderScene={renderScene}
             onIndexChange={setIndex}
             initialLayout={{ width: layout.width }}
