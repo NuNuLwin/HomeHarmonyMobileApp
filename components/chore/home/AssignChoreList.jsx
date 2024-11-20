@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { 
-  ActivityIndicator, 
+import {
+  ActivityIndicator,
   FlatList,
   Image,
   StyleSheet,
   Text,
-  View
+  View,
 } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 
@@ -41,7 +41,7 @@ export default function AssignChoreList({ currentUser, currentRole }) {
 
   useEffect(() => {
     if (userData && currentUser && currentRole) {
-      console.log('userData:', userData);
+      console.log("userData:", userData);
       GetAssignChoreList("Pending");
     }
   }, []);
@@ -55,12 +55,12 @@ export default function AssignChoreList({ currentUser, currentRole }) {
   const handleRemoveItem = (chore_id) => {
     if (!chore_id) return;
 
-    setAssignedChoreList(assignedChoreList.filter(x => x.id !== chore_id));
-  }
+    setAssignedChoreList(assignedChoreList.filter((x) => x.id !== chore_id));
+  };
 
   const GetAssignChoreList = async (category) => {
     setLoader(true);
-    
+
     try {
       let q = "";
       if (currentRole === "parent") {
@@ -77,44 +77,39 @@ export default function AssignChoreList({ currentUser, currentRole }) {
           where("kidName", "==", currentUser)
         );
       }
-      
-      const assignedChores = []
+
+      const assignedChores = [];
       const querySnapshot = await getDocs(q);
-      querySnapshot.forEach(x => {
-        let tmp = {...x.data()};
-        tmp['id'] = x.id;
+      querySnapshot.forEach((x) => {
+        let tmp = { ...x.data() };
+        tmp["id"] = x.id;
         assignedChores.push(tmp);
       });
 
-      const others = await Promise.all(assignedChores.map((_doc) => {
-        if (_doc.recommendChoreId) {
-          return getDoc(doc(
-            db, "RecommendChores",
-            _doc.recommendChoreId
-          ))
-        } else {
-          return getDoc(doc(
-            db, "CustomChores",
-            _doc.customChoreId
-          ))
-        }
-      }));
-      
-      let other_chores = {};
-      others.map(other => other_chores[other.id] = other.data());
+      const others = await Promise.all(
+        assignedChores.map((_doc) => {
+          if (_doc.recommendChoreId) {
+            return getDoc(doc(db, "RecommendChores", _doc.recommendChoreId));
+          } else {
+            return getDoc(doc(db, "CustomChores", _doc.customChoreId));
+          }
+        })
+      );
 
-      assignedChores.forEach(assignedChore => {
-        assignedChore['id'] = assignedChore.id;
+      let other_chores = {};
+      others.map((other) => (other_chores[other.id] = other.data()));
+
+      assignedChores.forEach((assignedChore) => {
+        assignedChore["id"] = assignedChore.id;
         if (assignedChore.recommendChoreId) {
-          assignedChore['chore'] = other_chores[assignedChore.recommendChoreId];
+          assignedChore["chore"] = other_chores[assignedChore.recommendChoreId];
         } else {
-          assignedChore['chore'] = other_chores[assignedChore.customChoreId];
+          assignedChore["chore"] = other_chores[assignedChore.customChoreId];
         }
       });
 
       setAssignedChoreList(assignedChores);
       setLoader(false);
-
     } catch (error) {
       console.error("Error fetching chores: ", error);
     }
@@ -122,42 +117,53 @@ export default function AssignChoreList({ currentUser, currentRole }) {
   const renderSeparator = () => <View style={styles.separator} />;
 
   return (
-    <View
-      style={{ paddingLeft: 10, paddingRight: 10 }}
-    >
+    <View style={{ paddingLeft: 10, paddingRight: 10 }}>
       {/* Pass GetAssignChoreList function as the `category` prop */}
       {/* <Category category={GetAssignChoreList} /> */}
-      <Category 
+      <Category
         category={(value) => {
           setSelectedType(value);
-          GetAssignChoreList(value)
-        }} 
+          GetAssignChoreList(value);
+        }}
         currentRole={currentRole}
       />
       {loader ? (
-          <ActivityIndicator
-            size="small"
-            color={Colors.PRIMARY}
-            style={styles.loader}
+        <ActivityIndicator
+          size="small"
+          color={Colors.PRIMARY}
+          style={styles.loader}
+        />
+      ) : assignedChoreList.length === 0 ? (
+        <View style={styles.container}>
+          <Image
+            style={styles.img}
+            source={require("./../../../assets/images/house.png")}
           />
-        ) : assignedChoreList.length === 0 ? (
-          <View style={styles.container}>
-            <Image
-              style={styles.img}
-              source={require("../../../assets/images/chore.jpg")}
-            />
-            <Text style={[styles.text, { marginTop: 15 }]}>No chores available.</Text>
-          </View>
-        ) : (
+          {selectedType === Keys.IN_PROGRESS ? (
+            <Text style={styles.text}>
+              All completed chores that are pending approval shows up in this
+              section.
+            </Text>
+          ) : selectedType === Keys.PENDING ? (
+            <Text style={styles.text}>
+              All assigned chores shows up in this section.
+            </Text>
+          ) : (
+            <Text style={styles.text}>
+              All completed chores shows up in this section.
+            </Text>
+          )}
+        </View>
+      ) : (
         <FlatList
           data={assignedChoreList}
           refreshing={loader}
           onRefresh={() => GetAssignChoreList(selectedType)}
           // ItemSeparatorComponent={renderSeparator}
           renderItem={({ item, index }) => (
-            <AssignChoreListItem 
+            <AssignChoreListItem
               // id={item.id}
-              // chore={item.chore} 
+              // chore={item.chore}
               assigned_chore={item}
               currentUser={currentUser}
               currentRole={currentRole}
@@ -181,8 +187,8 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   img: {
-    width: 150,
-    height: 150,
+    width: 50,
+    height: 50,
   },
   container: {
     justifyContent: "center",
@@ -190,6 +196,14 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     marginTop: "10%",
+    gap: 20,
     // marginBottom: "45%",
+  },
+  text: {
+    alignContent: "center",
+    fontSize: 16,
+    color: Colors.GREY,
+    fontFamily: "outfit-regular",
+    justifyContent: "center",
   },
 });

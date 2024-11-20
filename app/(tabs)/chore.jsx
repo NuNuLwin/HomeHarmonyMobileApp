@@ -1,4 +1,4 @@
-import { 
+import {
   ActivityIndicator,
   ImageBackground,
   SafeAreaView,
@@ -26,6 +26,9 @@ import Keys from "@/constants/Keys";
 import { TouchableOpacity } from "react-native";
 // import { signOut } from "firebase/auth";
 
+// icons
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+
 export default function chore() {
   const [currentUser, setCurrentUser] = useState(null);
   const [currentRole, setCurrentRole] = useState(null);
@@ -35,70 +38,77 @@ export default function chore() {
     try {
       const current_user = await AsyncStorage.getItem(Keys.CURRENT_USER);
       setCurrentUser(current_user);
-  
+
       const current_role = await AsyncStorage.getItem(Keys.CURRENT_ROLE);
-      setCurrentRole  (current_role);
+      setCurrentRole(current_role);
     } catch (error) {
       console.error("Error getting async storage update:", error);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     GetCurrentUser();
   }, []);
-  
+
   const router = useRouter();
 
   return (
     <SafeAreaView style={{ backgroundColor: Colors.WHITE }}>
       {loading ? (
-          <View style={styles.container}>
-            <ActivityIndicator
-              size="small"
-              color={Colors.PRIMARY}
-              style={styles.loader}
-            />
+        <View style={styles.container}>
+          <ActivityIndicator
+            size="small"
+            color={Colors.PRIMARY}
+            style={styles.loader}
+          />
+        </View>
+      ) : (
+        <View style={styles.container}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            {/* <Text style={styles.title}>Hello, {currentUser}!</Text> */}
           </View>
-        ): (
-          <View style={styles.container}>
-            <View
-              style={{ 
-                flexDirection: "row", 
-                justifyContent: "space-between",
-                alignItems: "center"
-              }}
-            >
-              {/* <Text style={styles.title}>Hello, {currentUser}!</Text> */}
+          <ImageBackground
+            style={styles.img}
+            source={require("./../../assets/images/chore.jpg")}
+          >
+            <View style={styles.headerContainer}>
+              <TouchableOpacity
+                onPress={() => {
+                  router.replace("/family/userlist");
+                }}
+                style={styles.switchButton}
+              >
+                <MaterialCommunityIcons
+                  name="account-switch"
+                  size={24}
+                  color="black"
+                />
+              </TouchableOpacity>
             </View>
-            <ImageBackground
-              style={styles.img}
-              source={require("./../../assets/images/chore.jpg")}
-            >
-              <Text style={styles.title}>Chores</Text>
-            </ImageBackground>
-            <Header 
-              currentRole={currentRole}
-              currentUser={currentUser}
-            />
-            <AssignChoreList
-              currentRole={currentRole}
-              currentUser={currentUser}
-            />
-            
-              <TouchableOpacity onPress={() => {
-                router.replace("/family/userlist");
-              }}><Text>Select</Text></TouchableOpacity>
-          </View>
-        )}
+          </ImageBackground>
+
+          <Header currentRole={currentRole} currentUser={currentUser} />
+          <AssignChoreList
+            currentRole={currentRole}
+            currentUser={currentUser}
+          />
+        </View>
+      )}
     </SafeAreaView>
   );
 }
 const styles = StyleSheet.create({
   container: {
     padding: 5,
-    height: '100%',
+    height: "100%",
     // gap: 10,
   },
   img: {
@@ -117,5 +127,16 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 20,
     alignSelf: "center",
+  },
+  headerContainer: {
+    flexDirection: "row",
+    // justifyContent: "flex-end",
+    alignItems: "center",
+    padding: 10,
+  },
+
+  switchButton: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 });
