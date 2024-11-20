@@ -54,7 +54,7 @@ export default function KidInfo({ kid, index, currentUser, family }) {
             return prevArray;
           });
         } else if (change.type === "removed") {
-          setDataArray((prevArray) => 
+          setChores((prevArray) => 
             prevArray.filter((item) => item.id !== change.doc.id)
           );
         }

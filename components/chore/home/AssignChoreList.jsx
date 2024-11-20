@@ -123,7 +123,7 @@ export default function AssignChoreList({ currentUser, currentRole }) {
 
   return (
     <View
-      style={{ paddingLeft: 10, paddingRight: 10 }}
+      style={{ paddingLeft: 10, paddingRight: 10, flex: 1 }}
     >
       {/* Pass GetAssignChoreList function as the `category` prop */}
       {/* <Category category={GetAssignChoreList} /> */}

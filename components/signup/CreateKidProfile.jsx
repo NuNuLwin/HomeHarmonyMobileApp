@@ -241,7 +241,7 @@ export default function CreateKidProfile({ onSignUp }) {
       {kids.map((kid, index) => (
         <View key={index} style={styles.box}>
           <View
-            style={image ? styles.img_wrapper : styles.img_wrapper_default}
+            style={kid.image ? styles.img_wrapper : styles.img_wrapper_default}
           >
             {kid.image ? (
               <Image
