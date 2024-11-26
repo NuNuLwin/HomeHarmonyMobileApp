@@ -1,10 +1,12 @@
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, Dimensions } from "react-native";
 import React from "react";
 import Colors from "../../constants/Colors";
 
-export default function ThirdSlide({ width }) {
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+
+export default function ThirdSlide() {
   return (
-    <View style={[styles.container, { width }]}>
+    <View style={[styles.container]}>
       <View style={styles.logo_wrapper}>
         <Image
           style={styles.logo}
@@ -17,28 +19,32 @@ export default function ThirdSlide({ width }) {
         style={styles.slider_img}
         source={require("./../../assets/images/intro2.jpg")}
       ></Image>
-      <Text style={styles.desc}>
-        Celebrate together: Every moment counts on our family calendar!
-      </Text>
+
+      <View style={styles.desc_wrapper}>
+        <Text style={styles.desc}>
+          Celebrate together: Every moment counts on our family calendar!
+        </Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: "flex-end",
     alignItems: "center",
     backgroundColor: Colors.WHITE,
-    gap: 10,
+    gap: 20,
+    width: screenWidth,
   },
   logo_wrapper: {
-    display: "flex",
+    height: (2 / 14) * screenHeight,
     flexDirection: "row",
+    alignItems: "flex-end",
     gap: 10,
   },
   logo: {
-    width: 40,
-    height: 40,
+    width: screenWidth * 0.1,
+    height: screenWidth * 0.1,
   },
   logo_title: {
     fontFamily: "akaya-regular",
@@ -51,13 +57,20 @@ const styles = StyleSheet.create({
   },
   slider_img: {
     width: "100%",
-    height: 300,
-    maxHeight: "35%",
+    height: screenHeight * 0.27,
+    resizeMode: "contain",
+  },
+  desc_wrapper: {
+    flex: 1,
+    paddingHorizontal: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    paddingVertical: 10,
   },
   desc: {
-    padding: 40,
     fontFamily: "outfit-light",
-    fontSize: 20,
+    fontSize: screenWidth * 0.05,
     textAlign: "center",
   },
 });

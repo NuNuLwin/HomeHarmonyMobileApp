@@ -1,44 +1,53 @@
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, Dimensions } from "react-native";
 import React from "react";
 import Colors from "../../constants/Colors";
 
-export default function SecondSlide({ width }) {
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+
+export default function SecondSlide() {
   return (
-    <View style={[styles.container, { width }]}>
-      <View style={styles.logo_wrapper}>
-        <Image
-          style={styles.logo}
-          source={require("./../../assets/images/HomeHarmonyLogo.png")}
-        ></Image>
-        <Text style={styles.logo_title}>HomeHarmony</Text>
+    <View style={[styles.container]}>
+      <View>
+        <View style={styles.logo_wrapper}>
+          <Image
+            style={styles.logo}
+            source={require("./../../assets/images/HomeHarmonyLogo.png")}
+          ></Image>
+          <Text style={styles.logo_title}>HomeHarmony</Text>
+        </View>
       </View>
+
       <Text style={styles.slider_title}>Small chores, big lessons</Text>
       <Image
         style={styles.slider_img}
         source={require("./../../assets/images/intro1.jpg")}
       ></Image>
-      <Text style={styles.desc}>
-        Chores and Rewards: The keys to motivating your kids, keeping them
-        organized, and fostering engagement.
-      </Text>
+
+      <View style={styles.desc_wrapper}>
+        <Text style={styles.desc}>
+          Chores and Rewards: The keys to motivating your kids, keeping them
+          organized, and fostering engagement.
+        </Text>
+      </View>
     </View>
   );
 }
 const styles = StyleSheet.create({
   container: {
-    justifyContent: "flex-end",
     alignItems: "center",
     backgroundColor: Colors.WHITE,
-    gap: 10,
+    gap: 20,
+    width: screenWidth,
   },
   logo_wrapper: {
-    display: "flex",
+    height: (2 / 14) * screenHeight,
     flexDirection: "row",
+    alignItems: "flex-end",
     gap: 10,
   },
   logo: {
-    width: 40,
-    height: 40,
+    width: screenWidth * 0.1,
+    height: screenWidth * 0.1,
   },
   logo_title: {
     fontFamily: "akaya-regular",
@@ -51,13 +60,20 @@ const styles = StyleSheet.create({
   },
   slider_img: {
     width: "100%",
-    height: 300,
-    maxHeight: "35%",
+    height: screenHeight * 0.27,
+    resizeMode: "contain",
+  },
+  desc_wrapper: {
+    flex: 1,
+    paddingHorizontal: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    paddingVertical: 10,
   },
   desc: {
-    padding: 40,
     fontFamily: "outfit-light",
-    fontSize: 20,
+    fontSize: screenWidth * 0.05,
     textAlign: "center",
   },
 });

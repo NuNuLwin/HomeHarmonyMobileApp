@@ -1,15 +1,17 @@
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, Dimensions } from "react-native";
 import React from "react";
 import Colors from "../../constants/Colors";
 
-export default function FirstSlide({ width }) {
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+
+export default function FirstSlide() {
   return (
-    <View style={[styles.container, { width }]}>
+    <View style={[styles.container]}>
       <View style={styles.logoWrapper}>
         <Image
           style={styles.logo}
           source={require("./../../assets/images/HomeHarmonyLogo.png")}
-        ></Image>
+        />
         <Text style={styles.logo_title}>HomeHarmony</Text>
       </View>
 
@@ -25,17 +27,19 @@ export default function FirstSlide({ width }) {
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: "flex-end",
-    alignItems: "center",
+    flex: 1,
     backgroundColor: Colors.WHITE,
-    gap: 20,
+    paddingVertical: 20,
+    width: screenWidth,
   },
   logoWrapper: {
-    alignItems: "center", // Center items within logoWrapper
+    alignItems: "center",
+    height: (6 / 14) * screenHeight,
+    justifyContent: "flex-end",
   },
   logo: {
-    width: 150,
-    height: 150,
+    width: screenWidth * 0.4,
+    height: screenWidth * 0.4,
   },
   logo_title: {
     fontFamily: "akaya-regular",
@@ -44,11 +48,16 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   desc_wrapper: {
-    padding: 40,
+    flex: 1,
+    paddingHorizontal: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
   },
   desc: {
     fontFamily: "outfit-light",
-    fontSize: 23,
+    fontSize: screenWidth * 0.05,
     textAlign: "center",
+    flexWrap: "wrap",
   },
 });

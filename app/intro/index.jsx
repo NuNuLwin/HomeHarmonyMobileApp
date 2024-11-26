@@ -29,9 +29,9 @@ export default function index() {
         onScroll={setSliderPage}
         showsHorizontalScrollIndicator={false}
       >
-        <FirstSlide width={width} />
-        <SecondSlide width={width} />
-        <ThirdSlide width={width} />
+        <FirstSlide />
+        <SecondSlide />
+        <ThirdSlide />
       </ScrollView>
 
       <SlideBar currentPage={currentPage} />
