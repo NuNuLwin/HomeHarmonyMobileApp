@@ -1,6 +1,6 @@
 import { View, Text, SafeAreaView, Image, StyleSheet } from "react-native";
 import React, { useEffect, useState, useContext } from "react";
-import { useNavigation, useRouter } from "expo-router";
+import { useNavigation } from "expo-router";
 import { SignUpContext } from "../../../contexts/SignUpContext";
 
 // Components
@@ -92,9 +92,7 @@ export default function SignUp() {
         {step === 3 && (
           <View>
             <Progressindicator size="1.0" />
-            <CreateKidProfile 
-              onSignUp={() => setIsProcessing(!isProcessing)}
-            />
+            <CreateKidProfile onSignUp={() => setIsProcessing(!isProcessing)} />
           </View>
         )}
 
@@ -104,11 +102,6 @@ export default function SignUp() {
           showNextButton={step < 3 && !isProcessing}
           handleNextButtonClicked={handleNextButtonPressed}
         />
-
-        {/* Sign in button */}
-        {/* <TouchableOpacity onPress={handleSignUp} style={styles.signup_button}>
-          <Text style={[styles.text, styles.text_style]}>Sign up</Text>
-        </TouchableOpacity> */}
       </View>
     </SafeAreaView>
   );

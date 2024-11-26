@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Dimensions, ScrollView } from "react-native";
+import { View, StyleSheet, Dimensions, ScrollView } from "react-native";
 import React, { useState } from "react";
 import Colors from "../../constants/Colors";
 import FirstSlide from "../../components/intro/FirstSlide";
@@ -7,7 +7,7 @@ import SlideBar from "../../components/intro/SlideBar";
 import ButtonGroup from "../../components/intro/ButtonGroup";
 import ThirdSlide from "../../components/intro/ThirdSlide";
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
 export default function index() {
   const [currentPage, setCurrentPage] = useState(0);
