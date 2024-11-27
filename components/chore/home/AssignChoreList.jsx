@@ -117,7 +117,7 @@ export default function AssignChoreList({ currentUser, currentRole }) {
   const renderSeparator = () => <View style={styles.separator} />;
 
   return (
-    <View style={{ paddingLeft: 10, paddingRight: 10 }}>
+    <View style={{ paddingLeft: 10, paddingRight: 10, flex: 1 }}>
       {/* Pass GetAssignChoreList function as the `category` prop */}
       {/* <Category category={GetAssignChoreList} /> */}
       <Category
