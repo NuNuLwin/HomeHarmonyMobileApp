@@ -31,7 +31,7 @@ export default function DateInput(props) {
         <TextInput
           style={props.styles.input}
           placeholder="Choose DOB"
-          value={date.toDateString()}
+          value={props.dob ? date.toDateString() : ""}
           editable={false}
           onPressIn={toggleDatePicker}
         />

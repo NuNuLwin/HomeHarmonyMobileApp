@@ -16,7 +16,7 @@ export default function FirstSlide() {
       </View>
 
       <View style={styles.desc_wrapper}>
-        <Text style={styles.desc}>
+        <Text style={styles.desc} numberOfLines={8}>
           Smart tasks, seamless events – making family life easier, one step at
           a time.
         </Text>
@@ -49,15 +49,17 @@ const styles = StyleSheet.create({
   },
   desc_wrapper: {
     flex: 1,
-    paddingHorizontal: 40,
+    flexDirection: "column",
+    paddingHorizontal: 70,
     justifyContent: "center",
     alignItems: "center",
-    width: "100%",
   },
   desc: {
     fontFamily: "outfit-light",
     fontSize: screenWidth * 0.05,
     textAlign: "center",
-    flexWrap: "wrap",
+    lineHeight: 24,
+    width: "100%",
+    maxHeight: "100%",
   },
 });

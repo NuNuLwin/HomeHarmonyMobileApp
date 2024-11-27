@@ -240,9 +240,7 @@ export default function CreateKidProfile({ onSignUp }) {
 
       {kids.map((kid, index) => (
         <View key={index} style={styles.box}>
-          <View
-            style={image ? styles.img_wrapper : styles.img_wrapper_default}
-          >
+          <View style={image ? styles.img_wrapper : styles.img_wrapper_default}>
             {kid.image ? (
               <Image
                 source={{
@@ -250,7 +248,7 @@ export default function CreateKidProfile({ onSignUp }) {
                 }}
                 style={styles.profile_img}
               />
-            ): (
+            ) : (
               <FontAwesome5 name="user" size={40} color="grey" />
             )}
             <TouchableOpacity

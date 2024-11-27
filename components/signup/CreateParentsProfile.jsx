@@ -6,14 +6,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useContext, useEffect, useState, useRef } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import { SignUpContext } from "../../contexts/SignUpContext.jsx";
 
 // firebase
-import { addDoc, collection, onSnapshot } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { db, storage } from "../../config/FirebaseConfig.js";
+import { storage } from "../../config/FirebaseConfig.js";
 
 // Image
 import * as ImagePicker from "expo-image-picker";
@@ -88,6 +87,21 @@ export default function CreateParentsProfile(props) {
       };
     });
   }, [name, dob, gender, image, props.step, setSignUpData]);
+
+  // Set gender based on selection from step 2
+  useEffect(() => {
+    if (props.step === "3") {
+      const parent1Gender = signUpData.parents?.[0]?.gender;
+      console.log("parent1Gender..", parent1Gender);
+
+      // Auto-select the opposite gender
+      if (parent1Gender === "Female") {
+        setGender("Male");
+      } else if (parent1Gender === "Male") {
+        setGender("Female");
+      }
+    }
+  }, [props.step, signUpData.parents]);
 
   // Events
   const confirmDate = (_date) => {
@@ -212,56 +226,6 @@ export default function CreateParentsProfile(props) {
         styles={styles}
         title={true}
       />
-      {/* <View style={styles.input_wrapper}>
-        <Text style={styles.text}>Date of Birthday</Text>
-
-        <Pressable onPress={toggleDatePicker}>
-          <TextInput
-            style={styles.input}
-            placeholder="Choose DOB"
-            value={dob}
-            editable={false}
-            onPressIn={toggleDatePicker}
-          />
-        </Pressable>
-
-        <Modal
-          visible={showPicker}
-          transparent={true}
-          animationType="slide"
-          onRequestClose={toggleDatePicker}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.bottomModal}>
-              <DateTimePicker
-                mode="date"
-                display="spinner"
-                value={date}
-                onChange={onChange}
-                style={styles.datePicker}
-              />
-
-              {Platform.OS === "ios" && (
-                <View style={styles.buttonContainer}>
-                  <TouchableOpacity
-                    style={[styles.pickerButton, styles.cancelButton]}
-                    onPress={toggleDatePicker}
-                  >
-                    <Text>Cancel</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[styles.pickerButton, styles.confirmButton]}
-                    onPress={confirmDate}
-                  >
-                    <Text style={styles.confirmText}>Confirm</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-          </View>
-        </Modal>
-      </View> */}
 
       {/* Gender */}
       <View style={styles.input_wrapper}>

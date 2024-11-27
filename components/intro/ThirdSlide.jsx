@@ -62,7 +62,8 @@ const styles = StyleSheet.create({
   },
   desc_wrapper: {
     flex: 1,
-    paddingHorizontal: 40,
+    flexDirection: "column",
+    paddingHorizontal: 70,
     justifyContent: "center",
     alignItems: "center",
     width: "100%",
@@ -72,5 +73,8 @@ const styles = StyleSheet.create({
     fontFamily: "outfit-light",
     fontSize: screenWidth * 0.05,
     textAlign: "center",
+    lineHeight: 24,
+    width: "100%",
+    maxHeight: "100%",
   },
 });
