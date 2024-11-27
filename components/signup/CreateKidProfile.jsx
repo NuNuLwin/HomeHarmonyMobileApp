@@ -35,7 +35,7 @@ export default function CreateKidProfile({ onSignUp }) {
   const [count, setCount] = useState(1);
   const { signUpData, setSignUpData } = useContext(SignUpContext);
   const [loading, setLoading] = useState(false);
-  const [kids, setKids] = useState([{ name: "", dob: "", point: 0 }]);
+  const [kids, setKids] = useState([{ name: "", dob: "", points: 0 }]);
   const router = useRouter();
   const [progress, setProgress] = useState(0);
   const [showModal, setShowModal] = useState(false);
@@ -46,7 +46,7 @@ export default function CreateKidProfile({ onSignUp }) {
   useEffect(() => {
     // Ensure there is at least one kid entry on page load
     if (!signUpData.kids || signUpData.kids.length === 0) {
-      setKids([{ name: "", dob: "", point: 0 }]);
+      setKids([{ name: "", dob: "", points: 0 }]);
     } else {
       setKids(signUpData.kids);
       setCount(signUpData.kids.length);
@@ -127,7 +127,7 @@ export default function CreateKidProfile({ onSignUp }) {
 
   // Add kid profile
   const handleIncreCount = () => {
-    setKids([...kids, { name: "", dob: "", point: 0 }]);
+    setKids([...kids, { name: "", dob: "", points: 0 }]);
     setCount(signUpData.kids.length + 1);
     setSignUpData((prevData) => ({
       ...prevData,

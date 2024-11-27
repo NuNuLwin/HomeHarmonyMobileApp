@@ -19,11 +19,46 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import Colors from "../../../constants/Colors";
 import Keys from "../../../constants/Keys";
 
-const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').height;
+const windowWidth = Dimensions.get("window").width;
+const windowHeight = Dimensions.get("window").height;
 
 export default function KidInfo({ kid, index, currentUser, family }) {
   const [chores, setChores] = useState([]);
+  const [kidPoint, setKidPoint] = useState(null);
+
+  useEffect(() => {
+    if (!family || !kid.name) return; // Ensure family and kid name are provided
+
+    const fetchKidPoint = async () => {
+      try {
+        const familyQuery = query(
+          collection(db, "Families"),
+          where("email", "==", family) // Adjust this to match your filter criteria
+        );
+
+        const querySnapshot = await getDocs(familyQuery);
+
+        if (!querySnapshot.empty) {
+          querySnapshot.forEach((doc) => {
+            const familyData = doc.data();
+            const kidsArray = familyData.kids;
+
+            const findkid = kidsArray.find(
+              (findkid) => findkid.name === kid.name
+            );
+
+            if (findkid) {
+              setKidPoint(findkid.points); // Update the state with the kid's points
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching kid info:", error);
+      }
+    };
+
+    fetchKidPoint();
+  }, [family, kid.name]);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -37,15 +72,22 @@ export default function KidInfo({ kid, index, currentUser, family }) {
 
     const unsubscribe = onSnapshot(_query, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
-        console.log('=== change ===', change.type, change.doc.id, change.doc.data());
+        console.log(
+          "=== change ===",
+          change.type,
+          change.doc.id,
+          change.doc.data()
+        );
         if (change.type === "added") {
           setChores((prevArray) => [
             ...prevArray,
-            { id: change.doc.id, ...change.doc.data() }
+            { id: change.doc.id, ...change.doc.data() },
           ]);
         } else if (change.type === "modified") {
           setChores((prevArray) => {
-            const index = prevArray.findIndex((item) => item.id === change.doc.id);
+            const index = prevArray.findIndex(
+              (item) => item.id === change.doc.id
+            );
             if (index !== -1) {
               const updatedArray = [...prevArray];
               updatedArray[index] = { id: change.doc.id, ...change.doc.data() };
@@ -54,7 +96,7 @@ export default function KidInfo({ kid, index, currentUser, family }) {
             return prevArray;
           });
         } else if (change.type === "removed") {
-          setChores((prevArray) => 
+          setChores((prevArray) =>
             prevArray.filter((item) => item.id !== change.doc.id)
           );
         }
@@ -67,7 +109,9 @@ export default function KidInfo({ kid, index, currentUser, family }) {
     <View
       style={[
         styles.kid_info_box,
-        { width: currentUser === kid.name ? windowWidth - 20 : windowWidth - 40 },
+        {
+          width: currentUser === kid.name ? windowWidth - 20 : windowWidth - 40,
+        },
       ]}
     >
       <View style={styles.icon_wrapper_parent2}>
@@ -90,7 +134,7 @@ export default function KidInfo({ kid, index, currentUser, family }) {
             />
 
             <View style={styles.point_box}>
-              <Text style={styles.point_text}>{kid.point}</Text>
+              <Text style={styles.point_text}>{kidPoint}</Text>
             </View>
 
             {/* <Text style={styles.text}>{kid.name}</Text> */}
