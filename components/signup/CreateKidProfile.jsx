@@ -35,7 +35,7 @@ export default function CreateKidProfile({ onSignUp }) {
   const [count, setCount] = useState(1);
   const { signUpData, setSignUpData } = useContext(SignUpContext);
   const [loading, setLoading] = useState(false);
-  const [kids, setKids] = useState([{ name: "", dob: "" }]);
+  const [kids, setKids] = useState([{ name: "", dob: "", point: 0 }]);
   const router = useRouter();
   const [progress, setProgress] = useState(0);
   const [showModal, setShowModal] = useState(false);
@@ -46,7 +46,7 @@ export default function CreateKidProfile({ onSignUp }) {
   useEffect(() => {
     // Ensure there is at least one kid entry on page load
     if (!signUpData.kids || signUpData.kids.length === 0) {
-      setKids([{ name: "", dob: "" }]);
+      setKids([{ name: "", dob: "", point: 0 }]);
     } else {
       setKids(signUpData.kids);
       setCount(signUpData.kids.length);
@@ -127,7 +127,7 @@ export default function CreateKidProfile({ onSignUp }) {
 
   // Add kid profile
   const handleIncreCount = () => {
-    setKids([...kids, { name: "", dob: "" }]);
+    setKids([...kids, { name: "", dob: "", point: 0 }]);
     setCount(signUpData.kids.length + 1);
     setSignUpData((prevData) => ({
       ...prevData,
@@ -183,7 +183,6 @@ export default function CreateKidProfile({ onSignUp }) {
           email: user.email,
           parents: signUpData.parents,
           kids: signUpData.kids,
-          point: 0,
         });
         setLoading(false);
 
@@ -240,7 +239,9 @@ export default function CreateKidProfile({ onSignUp }) {
 
       {kids.map((kid, index) => (
         <View key={index} style={styles.box}>
-          <View style={image ? styles.img_wrapper : styles.img_wrapper_default}>
+          <View
+            style={kid.image ? styles.img_wrapper : styles.img_wrapper_default}
+          >
             {kid.image ? (
               <Image
                 source={{
