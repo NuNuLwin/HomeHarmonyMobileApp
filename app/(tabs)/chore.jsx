@@ -13,7 +13,6 @@ import { useRouter } from "expo-router";
 
 // components
 import AssignChoreList from "../../components/chore/home/AssignChoreList";
-import Category from "../../components/chore/home/Category";
 import Header from "../../components/chore/home/Header";
 
 // async storage
@@ -24,7 +23,6 @@ import Colors from "./../../constants/Colors";
 import Keys from "@/constants/Keys";
 
 import { TouchableOpacity } from "react-native";
-// import { signOut } from "firebase/auth";
 
 // icons
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";

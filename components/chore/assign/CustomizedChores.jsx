@@ -33,7 +33,7 @@ import CustomizedChoreItem from "./CustomizedChoreItem";
 // constants
 import Colors from "../../../constants/Colors";
 import Keys from "../../../constants/Keys";
-Keys
+Keys;
 
 export default function CustomizedChores({ selectedKid }) {
   const userData = useUserProvider();
@@ -48,15 +48,15 @@ export default function CustomizedChores({ selectedKid }) {
     try {
       const current_user = await AsyncStorage.getItem(Keys.CURRENT_USER);
       setCurrentUser(current_user);
-  
+
       const current_role = await AsyncStorage.getItem(Keys.CURRENT_ROLE);
       setCurrentRole(current_role);
     } catch (error) {
-      console.log('Error getting current user from async storage:', error);
+      console.log("Error getting current user from async storage:", error);
     } finally {
       setLoader(false);
     }
-  }
+  };
 
   useEffect(() => {
     GetCurrentUser();
@@ -191,7 +191,7 @@ export default function CustomizedChores({ selectedKid }) {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, // Take up full screen height
+    flex: 1,
   },
   separator: {
     height: 1,
@@ -204,6 +204,10 @@ const styles = StyleSheet.create({
   text: { fontFamily: "outfit-light", fontSize: 18, color: Colors.GREY },
   text_wrapper: { padding: 30, alignItems: "center" },
   footer: {
-    marginBottom: 20,
+    position: "absolute",
+    bottom: 70,
+    left: 0,
+    right: 0,
+    alignItems: "center",
   },
 });

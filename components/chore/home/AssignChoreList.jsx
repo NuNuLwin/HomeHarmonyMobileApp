@@ -39,6 +39,8 @@ export default function AssignChoreList({ currentUser, currentRole }) {
   const [loader, setLoader] = useState(false);
   const [assignedChoreList, setAssignedChoreList] = useState([]);
 
+  console.log("selectedType..", selectedType);
+
   useEffect(() => {
     if (userData && currentUser && currentRole) {
       console.log("userData:", userData);
@@ -136,7 +138,7 @@ export default function AssignChoreList({ currentUser, currentRole }) {
       ) : assignedChoreList.length === 0 ? (
         <View style={styles.container}>
           <Image
-            style={styles.img}
+            style={[styles.img, { opacity: 0.5 }]}
             source={require("./../../../assets/images/house.png")}
           />
           {selectedType === Keys.IN_PROGRESS ? (

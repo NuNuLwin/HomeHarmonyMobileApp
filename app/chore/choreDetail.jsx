@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image as RNImage,
   Modal,
   SafeAreaView,
   StyleSheet,
@@ -15,8 +16,8 @@ import { useNavigation, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
 // image
-import Image from 'react-native-image-progress';
-import * as ImageManipulator from 'expo-image-manipulator';
+import Image from "react-native-image-progress";
+import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import ImageViewer from "react-native-image-zoom-viewer";
 import { Pie } from "react-native-progress";
@@ -140,7 +141,8 @@ export default function choreDetail() {
       setTimeout(async () => {
         try {
           const thumbnail = await ImageManipulator.manipulateAsync(
-            result.assets[0].uri, [],
+            result.assets[0].uri,
+            [],
             { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG }
           );
 
@@ -187,9 +189,59 @@ export default function choreDetail() {
         status: newStatus,
       });
 
-      Alert.alert("Sucess", "The chore status has been updated!", [
-        { text: "OK", onPress: () => router.replace({ pathname: "/chore" }) },
-      ]);
+      if (currentRole === "parent") {
+        const familyDocRef = doc(db, "Families", selectedChore.family);
+        const familyDoc = await getDoc(familyDocRef);
+
+        if (familyDoc.exists()) {
+          const familyData = familyDoc.data();
+          const kidsArray = familyData.kids;
+          const kidName = selectedChore.kidName;
+
+          const kidIndex = kidsArray.findIndex((kid) => kid.name === kidName);
+
+          if (kidIndex !== -1) {
+            console.log("Kid found in the family. Updating points...");
+
+            const kidData = kidsArray[kidIndex];
+            const currentPoints = kidData.points || 0;
+            const newPoints = currentPoints + selectedChore.chore.point;
+
+            // Update the kid's points in the family's document
+            kidsArray[kidIndex].points = newPoints;
+
+            await updateDoc(familyDocRef, {
+              kids: kidsArray,
+            });
+
+            Alert.alert(
+              "Completed",
+              "Assigned chore has been marked as completed!",
+              [
+                {
+                  text: "OK",
+                  onPress: () => router.replace({ pathname: "/chore" }),
+                },
+              ]
+            );
+          } else {
+            console.log("Kid not found in the kids array.");
+          }
+        } else {
+          console.log("Family document not found.");
+        }
+      } else {
+        Alert.alert(
+          "Completed",
+          "Your assigned chore has been marked as completed and is pending approval!",
+          [
+            {
+              text: "OK",
+              onPress: () => router.replace({ pathname: "/chore" }),
+            },
+          ]
+        );
+      }
     } catch (error) {
       console.log("Error updating chore status:", error);
     } finally {
@@ -200,22 +252,43 @@ export default function choreDetail() {
   const handleRejectClicked = async () => {
     if (btnLoading) return;
 
-    setBtnLoading(true);
+    // Show confirmation dialog
+    Alert.alert(
+      "Confirm Rejection",
+      "Are you sure you want to reject this assigned chore?",
+      [
+        {
+          text: "Cancel", // If the user cancels, do nothing
+          onPress: () => console.log("Rejection canceled"),
+          style: "cancel",
+        },
+        {
+          text: "Reject", // If the user confirms, proceed with rejection
+          onPress: async () => {
+            setBtnLoading(true);
 
-    try {
-      let newStatus = Keys.PENDING;
-      await updateDoc(doc(db, "AssignChores", selectedChore.id), {
-        status: newStatus,
-      });
+            try {
+              let newStatus = Keys.PENDING; // or the status you want for rejection
+              await updateDoc(doc(db, "AssignChores", selectedChore.id), {
+                status: newStatus,
+              });
 
-      Alert.alert("Sucess", "The chore status has been updated!", [
-        { text: "OK", onPress: () => router.replace({ pathname: "/chore" }) },
-      ]);
-    } catch (error) {
-      console.log("Error updating chore status:", error);
-    } finally {
-      setBtnLoading(false);
-    }
+              // Show success alert
+              Alert.alert("Rejected", "The assigned chore has been rejected!", [
+                {
+                  text: "OK",
+                  onPress: () => router.replace({ pathname: "/chore" }),
+                },
+              ]);
+            } catch (error) {
+              console.log("Error updating chore status:", error);
+            } finally {
+              setBtnLoading(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   /* Components */
@@ -224,24 +297,20 @@ export default function choreDetail() {
       <View
         style={{
           justifyContent: "center",
-          alignItems: "center"
+          alignItems: "center",
         }}
         key={index}
       >
-        <TouchableOpacity 
-          style={styles.thumbnail} 
+        <TouchableOpacity
+          style={styles.thumbnail}
           onPress={() => {
             setSelectedImage(index);
             setShowImagePreview(true);
-            console.log('=== selected image ===', index);
+            console.log("=== selected image ===", index);
           }}
           key={index}
         >
-          <Image 
-            source={{ uri: img }}
-            style={{ flex: 1 }}
-            indicator={Pie}
-          />
+          <Image source={{ uri: img }} style={{ flex: 1 }} indicator={Pie} />
         </TouchableOpacity>
         <TouchableOpacity
           onPress={async () => {
@@ -256,58 +325,58 @@ export default function choreDetail() {
             });
 
             setLoading(false);
-
           }}
         >
           <Text
             style={{
               color: Colors.RED,
-              paddingTop: 5
+              paddingTop: 5,
             }}
-          >Remove</Text>
+          >
+            Remove
+          </Text>
         </TouchableOpacity>
       </View>
-    )
-  }
+    );
+  };
 
   const ImagePreviewModal = () => {
     return (
-      <Modal 
-        visible={showImagePreview} 
+      <Modal
+        visible={showImagePreview}
         transparent={false}
         style={{
           backgroundColor: "black",
         }}
       >
         <TouchableOpacity
-            onPress={() => setShowImagePreview(false)}
-            style={{
-              position: "absolute",
-              top: StatusBar.length + 40,
-              right: 10,
-              width: 44,
-              height: 44,
-              backgroundColor: "black",
-              justifyContent: "center",
-              alignItems: "center",
-              borderRadius: 25,
-              zIndex: 2
-            }}
+          onPress={() => setShowImagePreview(false)}
+          style={{
+            position: "absolute",
+            top: StatusBar.length + 40,
+            right: 10,
+            width: 44,
+            height: 44,
+            backgroundColor: "black",
+            justifyContent: "center",
+            alignItems: "center",
+            borderRadius: 25,
+            zIndex: 2,
+          }}
         >
-            <Ionicons name="close-outline" size={24} color="white" />
+          <Ionicons name="close-outline" size={24} color="white" />
         </TouchableOpacity>
-        <ImageViewer 
-          imageUrls={[{url: images[selectedImage]}]}
-          renderImage={(props) => <Image
-            {...props} indicator={Pie} />}
+        <ImageViewer
+          imageUrls={[{ url: images[selectedImage] }]}
+          renderImage={(props) => <Image {...props} indicator={Pie} />}
           renderIndicator={() => <View></View>}
           style={{
             backgroundColor: "black",
           }}
         />
       </Modal>
-    )
-  }
+    );
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.WHITE }}>
@@ -331,15 +400,23 @@ export default function choreDetail() {
           </View>
 
           <View style={styles.img_wrapper}>
-            <Image
-              style={styles.img}
-              indicator={Pie}
-              source={
-                selectedChore?.chore?.image
-                  ? { uri: selectedChore.chore.image }
-                  : require("./../../assets/images/to-do-list.png")
-              }
-            />
+            {selectedChore?.chore?.image ? (
+              <Image
+                style={styles.img}
+                indicator={Pie}
+                source={
+                  selectedChore?.chore?.image
+                    ? { uri: selectedChore.chore.image }
+                    : require("./../../assets/images/to-do-list.png")
+                }
+              />
+            ) : (
+              <RNImage
+                style={styles.img}
+                source={require("./../../assets/images/to-do-list.png")}
+              />
+            )}
+
             <Text style={[styles.text, { fontSize: 20 }]}>
               {selectedChore?.chore?.name}
             </Text>
@@ -463,6 +540,7 @@ const styles = StyleSheet.create({
   },
   img_wrapper: {
     alignItems: "center",
+    justifyContent: "center",
     gap: 20,
   },
   img: {
@@ -488,7 +566,7 @@ const styles = StyleSheet.create({
     width: "20%",
     borderRadius: 10,
     height: 70,
-    alignSelf: "flex-start"
+    alignSelf: "flex-start",
   },
   btn: {
     borderRadius: 20,

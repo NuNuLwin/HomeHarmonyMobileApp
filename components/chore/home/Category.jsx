@@ -19,18 +19,29 @@ export default function Category({ category, currentRole }) {
     router.push({ pathname: "/chore/assignChore" });
   };
 
+  console.log("========selectedCategory=======", selectedCategory);
+
   return (
     <View style={styles.container}>
       {/* Circle 1: Pending */}
       <View style={styles.circleContainer}>
         <TouchableOpacity
-          style={[selectedCategory === Keys.PENDING ? styles.circleSelected : styles.circle, { backgroundColor: Colors.CHORE_COLORS.PENDING }]}
+          style={[
+            selectedCategory === Keys.PENDING
+              ? styles.circleSelected
+              : styles.circle,
+            { backgroundColor: Colors.CHORE_COLORS.PENDING },
+          ]}
           onPress={() => {
             setSelectedCategory(Keys.PENDING);
             category(Keys.PENDING);
           }}
         >
-          <MaterialIcons name="hourglass-empty" size={25} color={Colors.CHORE_COLORS.PENDING_ICON} />
+          <MaterialIcons
+            name="hourglass-empty"
+            size={25}
+            color={Colors.CHORE_COLORS.PENDING_ICON}
+          />
         </TouchableOpacity>
         <Text style={styles.text}>{Keys.PENDING}</Text>
       </View>
@@ -38,7 +49,12 @@ export default function Category({ category, currentRole }) {
       {/* Circle 2: In-Progress */}
       <View style={styles.circleContainer}>
         <TouchableOpacity
-          style={[selectedCategory === Keys.IN_PROGRESS ? styles.circleSelected : styles.circle, { backgroundColor: Colors.CHORE_COLORS.IN_PROGRESS }]}
+          style={[
+            selectedCategory === Keys.IN_PROGRESS
+              ? styles.circleSelected
+              : styles.circle,
+            { backgroundColor: Colors.CHORE_COLORS.IN_PROGRESS },
+          ]}
           onPress={() => {
             setSelectedCategory(Keys.IN_PROGRESS);
             category(Keys.IN_PROGRESS);
@@ -57,7 +73,12 @@ export default function Category({ category, currentRole }) {
       {/* Circle 3: Completed */}
       <View style={styles.circleContainer}>
         <TouchableOpacity
-          style={[selectedCategory === Keys.COMPLETED ? styles.circleSelected : styles.circle, { backgroundColor: Colors.CHORE_COLORS.COMPLETED }]}
+          style={[
+            selectedCategory === Keys.COMPLETED
+              ? styles.circleSelected
+              : styles.circle,
+            { backgroundColor: Colors.CHORE_COLORS.COMPLETED },
+          ]}
           onPress={() => {
             setSelectedCategory(Keys.COMPLETED);
             category(Keys.COMPLETED);
@@ -73,10 +94,13 @@ export default function Category({ category, currentRole }) {
       </View>
 
       {/* Circle 4: Assign */}
-      {currentRole === "parent" && 
+      {currentRole === "parent" && (
         <View style={styles.circleContainer}>
           <TouchableOpacity
-            style={[styles.circle, { backgroundColor: Colors.CHORE_COLORS.ASSIGN }]}
+            style={[
+              styles.circle,
+              { backgroundColor: Colors.CHORE_COLORS.ASSIGN },
+            ]}
             onPress={() => {
               setSelectedCategory("Assign");
               handlePendingClick();
@@ -91,7 +115,7 @@ export default function Category({ category, currentRole }) {
           </TouchableOpacity>
           <Text style={styles.text}>Assign</Text>
         </View>
-      }
+      )}
     </View>
   );
 }
@@ -123,7 +147,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10,
     borderColor: Colors.SHADE_BLUE,
-    borderWidth: 4
+    borderWidth: 4,
   },
   text: {
     fontSize: 14,
