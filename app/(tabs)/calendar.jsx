@@ -9,7 +9,15 @@ import {
 } from "react-native";
 
 // firebase
-import { collection, query, where, getDocs, orderBy, deleteDoc, doc } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  orderBy,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 import { db } from "../../config/FirebaseConfig";
 
 // context
@@ -26,6 +34,9 @@ import Colors from "../../constants/Colors";
 import Feather from "@expo/vector-icons/Feather";
 import Keys from "../../constants/Keys";
 
+// icons
+import Ionicons from "@expo/vector-icons/Ionicons";
+
 import moment from "moment";
 
 export default function calendar() {
@@ -41,13 +52,13 @@ export default function calendar() {
     try {
       const current_user = await AsyncStorage.getItem(Keys.CURRENT_USER);
       setCurrentUser(current_user);
-  
+
       const current_role = await AsyncStorage.getItem(Keys.CURRENT_ROLE);
-      setCurrentRole  (current_role);
+      setCurrentRole(current_role);
     } catch (error) {
       console.error("Error getting async storage update:", error);
     }
-  }
+  };
 
   const GetEvents = async () => {
     try {
@@ -71,15 +82,15 @@ export default function calendar() {
         let tmp = {
           id: doc.id,
           ...doc.data(),
-        }
-        let event_date = moment(tmp.date).format('YYYY-MM-DD');
+        };
+        let event_date = moment(tmp.date).format("YYYY-MM-DD");
         if (event_date in tmpItems) {
           tmpItems[event_date].push(tmp);
         } else {
           tmpItems[event_date] = [tmp];
         }
 
-        return tmp
+        return tmp;
       });
       setItems(tmpItems);
     } catch (error) {
@@ -115,11 +126,11 @@ export default function calendar() {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   const handleRenderItem = (item, isFirst) => {
     return (
-      <TouchableOpacity 
+      <TouchableOpacity
         style={[styles.item, { height: item.height }]}
         onPress={async () => {
           await AsyncStorage.setItem(Keys.SELECTED_EVENT, JSON.stringify(item));
@@ -128,33 +139,29 @@ export default function calendar() {
       >
         <View style={styles.itemDetails}>
           <Text style={styles.itemTime}>
-            {item.time ? moment(item.time).format('h:mm a').toUpperCase() : ""}
+            {item.time ? moment(item.time).format("h:mm a").toUpperCase() : ""}
           </Text>
           <Text style={styles.itemTitle}>{item.eventName}</Text>
         </View>
         <View style={styles.itemDetails}>
-          <Image
-            style={styles.icon}
-            source={require("../../assets/images/location_on.png")}
-          />
+          <Ionicons name="location-sharp" size={20} color="black" />
           <Text>{item.eventPlace}</Text>
         </View>
         <View style={styles.itemDetails}>
-          <Image
-            style={styles.icon}
-            source={require("../../assets/images/person.png")}
-          />
+          <Ionicons name="person" size={19} color="black" />
           <Text>{item?.occupancy || 0} guests</Text>
         </View>
-        {currentRole === "parent" && <TouchableOpacity
-          style={styles.deleteIcon}
-          onPress={() => handleDeleteEvent(item)}
-        >
-          <Image
-            style={styles.icon}
-            source={require("../../assets/images/delete.png")}
-          />
-        </TouchableOpacity>}
+        {currentRole === "parent" && (
+          <TouchableOpacity
+            style={styles.deleteIcon}
+            onPress={() => handleDeleteEvent(item)}
+          >
+            <Image
+              style={styles.icon}
+              source={require("../../assets/images/delete.png")}
+            />
+          </TouchableOpacity>
+        )}
       </TouchableOpacity>
     );
   };
@@ -192,11 +199,13 @@ export default function calendar() {
           agendaKnobColor: "blue",
         }}
       />
-      {currentRole === "parent" && <View style={styles.btnWrapper}>
-        <TouchableOpacity style={styles.btn} onPress={handleAddEvent}>
-          <Feather name="plus" size={30} color="white" />
-        </TouchableOpacity>
-      </View>}
+      {currentRole === "parent" && (
+        <View style={styles.btnWrapper}>
+          <TouchableOpacity style={styles.btn} onPress={handleAddEvent}>
+            <Feather name="plus" size={30} color="white" />
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }

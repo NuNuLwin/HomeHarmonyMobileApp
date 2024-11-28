@@ -1,30 +1,27 @@
 import { useEffect, useRef, useState } from "react";
-import { 
+import {
   ActivityIndicator,
   Alert,
   Dimensions,
   FlatList,
   Keyboard,
-  KeyboardAvoidingView,
   Image,
   ImageBackground,
   Modal,
-  Platform,
   SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
-  View
+  View,
 } from "react-native";
 
 // router
-import { useRouter, useNavigation } from "expo-router";
+import { useNavigation } from "expo-router";
 
 // firebase
-import { collection, doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../config/FirebaseConfig";
 
 // async storage
@@ -42,7 +39,7 @@ import Keys from "../../constants/Keys";
 
 import moment from "moment";
 
-export default function eventDetail () {
+export default function eventDetail() {
   const navigation = useNavigation();
 
   const [currentRole, setCurrentRole] = useState(null);
@@ -52,7 +49,7 @@ export default function eventDetail () {
   const [showGuestList, setShowGuestList] = useState(false);
   const [message, setMessage] = useState("");
   const [hideStuff, setHideStuff] = useState(false);
-  
+
   const [loading, setLoading] = useState(true);
   const [modalLoading, setModalLoading] = useState(false);
   const [guestLoading, setGuestLoading] = useState(false);
@@ -74,12 +71,17 @@ export default function eventDetail () {
       if (selected_event?.message) {
         setMessage(selected_event.message);
       } else {
-        setMessage("Dear Friends,\n" +
-          "We are excited to invite you to celebrate " +
-          `${selected_event.eventName} with us on ${moment(selected_event.date).format('MMMM DD, YYYY')}, ` + 
-          `at ${moment(selected_event.time).format('h:mm a').toUpperCase()}. ` +
-          `The celebration will take place at ${selected_event.eventPlace}.\n` +
-          "We hope to see you there!"
+        setMessage(
+          "Dear Friends,\n" +
+            "We are excited to invite you to celebrate " +
+            `${selected_event.eventName} with us on ${moment(
+              selected_event.date
+            ).format("MMMM DD, YYYY")}, ` +
+            `at ${moment(selected_event.time)
+              .format("h:mm a")
+              .toUpperCase()}. ` +
+            `The celebration will take place at ${selected_event.eventPlace}.\n` +
+            "We hope to see you there!"
         );
       }
       setGuestList(selected_event.guests);
@@ -107,20 +109,20 @@ export default function eventDetail () {
     const { data } = await Contacts.getContactsAsync({});
     let _contactList = [];
 
-    data.forEach(x => {
+    data.forEach((x) => {
       let firstName = x.firstName || "";
       let lastName = x.lastName || "";
       let middleName = x.middleName || "";
       let phones = [];
 
-      x.phoneNumbers?.forEach(y => phones.push(y.number));
+      x.phoneNumbers?.forEach((y) => phones.push(y.number));
 
       if (phones) {
         let item = {
           first_name: firstName,
           middle_name: middleName,
           last_name: lastName,
-          phones
+          phones,
         };
         if (!checkIfInvitationExists(item)) {
           _contactList.push(item);
@@ -130,7 +132,7 @@ export default function eventDetail () {
     _contactList.sort((a, b) => a.first_name.localeCompare(b.first_name));
     setContactList(_contactList);
     setTimeout(() => setModalLoading(false), 1000);
-  }
+  };
 
   const handleInviteClicked = async (item) => {
     setGuestLoading(true);
@@ -150,15 +152,18 @@ export default function eventDetail () {
     } finally {
       setGuestLoading(false);
     }
-  }
+  };
 
   const handleDeleteGuest = async (item) => {
     setGuestLoading(true);
 
     try {
-      let copied = guestList.filter(x => x.first_name === item.first_name &&
-        x.middle_name === item.middle_name && 
-        x.last_name === item.last_name);
+      let copied = guestList.filter(
+        (x) =>
+          x.first_name === item.first_name &&
+          x.middle_name === item.middle_name &&
+          x.last_name === item.last_name
+      );
       await updateDoc(doc(db, "Events", selectedEvent.id), { guests: copied });
       setGuestList(copied);
     } catch (error) {
@@ -167,15 +172,17 @@ export default function eventDetail () {
     } finally {
       setGuestLoading(false);
     }
-  }
+  };
 
   const updateMessage = async () => {
     try {
-      await updateDoc(doc(db, "Events", selectedEvent.id), { message: message });
+      await updateDoc(doc(db, "Events", selectedEvent.id), {
+        message: message,
+      });
     } catch (error) {
       console.log("Deleting guest error:", error);
     }
-  }
+  };
 
   const handleSendMessage = async () => {
     if (smsLoading) return;
@@ -183,7 +190,7 @@ export default function eventDetail () {
     setSmsLoading(true);
 
     const contactPhones = [];
-    guestList.forEach(x => {
+    guestList.forEach((x) => {
       if (x.phones) {
         contactPhones.push(...x.phones);
       }
@@ -201,10 +208,13 @@ export default function eventDetail () {
 
       if (sendResult === "sent") {
         Alert.alert("Sucess", "Message sent successfully!", [
-          { text: "OK", onPress: async () => { 
-            await updateMessage();
-            setSmsLoading(false);
-          } },
+          {
+            text: "OK",
+            onPress: async () => {
+              await updateMessage();
+              setSmsLoading(false);
+            },
+          },
         ]);
       } else {
         Alert.alert("Error", "Message failed to send!", [
@@ -216,55 +226,62 @@ export default function eventDetail () {
         { text: "OK", onPress: () => setSmsLoading(false) },
       ]);
     }
-  }
+  };
 
   const checkIfInvitationExists = (item) => {
-
     if (!guestList) return false;
 
     return guestList.some(
-      guest => guest.first_name === item.first_name && guest.middle_name === item.middle_name && guest.last_name === item.last_name
+      (guest) =>
+        guest.first_name === item.first_name &&
+        guest.middle_name === item.middle_name &&
+        guest.last_name === item.last_name
     );
-  }
+  };
 
   /* Components */
   const GuestItem = ({ item }) => {
     return (
       <View style={styles.contact_wrapper}>
         <View style={styles.contact_info}>
-          <Text style={styles.contact_info_name}>{`${item.first_name} ${item.last_name}`}</Text>
-          <Text style={styles.contact_info_phone}>{item.phones ? item.phones.join(", ") : ""}</Text>
+          <Text
+            style={styles.contact_info_name}
+          >{`${item.first_name} ${item.last_name}`}</Text>
+          <Text style={styles.contact_info_phone}>
+            {item.phones ? item.phones.join(", ") : ""}
+          </Text>
         </View>
-        <TouchableOpacity
-          style={styles.deleteIcon}
-          onPress={handleDeleteGuest}
-        >
+        <TouchableOpacity style={styles.deleteIcon} onPress={handleDeleteGuest}>
           <Image
             style={styles.icon}
             source={require("../../assets/images/delete.png")}
           />
         </TouchableOpacity>
       </View>
-    )
-  }
+    );
+  };
 
   const ContactItem = ({ item }) => {
     return (
       <View style={styles.contact_wrapper}>
         <View style={styles.contact_info}>
-          <Text style={styles.contact_info_name}>{`${item.first_name} ${item.middle_name} ${item.last_name}`}</Text>
-          <Text style={styles.contact_info_phone}>{item.phones ? item.phones.join(", ") : ""}</Text>
+          <Text
+            style={styles.contact_info_name}
+          >{`${item.first_name} ${item.middle_name} ${item.last_name}`}</Text>
+          <Text style={styles.contact_info_phone}>
+            {item.phones ? item.phones.join(", ") : ""}
+          </Text>
         </View>
         {checkIfInvitationExists(item) ? (
-          <></>  
-        ) : (<TouchableOpacity
-          onPress={() => handleInviteClicked(item)}
-        >
-          <Text style={styles.invitation_text}>Add</Text>
-        </TouchableOpacity>)}
+          <></>
+        ) : (
+          <TouchableOpacity onPress={() => handleInviteClicked(item)}>
+            <Text style={styles.invitation_text}>Add</Text>
+          </TouchableOpacity>
+        )}
       </View>
-    )
-  }
+    );
+  };
 
   const renderSeparator = () => <View style={styles.separator} />;
 
@@ -288,67 +305,76 @@ export default function eventDetail () {
     //     android: () => 60
     //  })()}
     // >
-      <SafeAreaView style={styles.container}>
-        <TouchableOpacity
-          style={{ flex: 1 }}
-          activeOpacity={1} 
-          onPress={() => {
-            setHideStuff(false);
-            Keyboard.dismiss();
-          }}
-        >
-          {loading ? (
-            <ActivityIndicator
-              size="small"
-              color={Colors.PRIMARY}
-              style={styles.loader}
-            />
-          ) : (
+    <SafeAreaView style={styles.container}>
+      <TouchableOpacity
+        style={{ flex: 1 }}
+        activeOpacity={1}
+        onPress={() => {
+          setHideStuff(false);
+          Keyboard.dismiss();
+        }}
+      >
+        {loading ? (
+          <ActivityIndicator
+            size="small"
+            color={Colors.PRIMARY}
+            style={styles.loader}
+          />
+        ) : (
           <>
             <ImageBackground
-                style={styles.img}
-                source={require("./../../assets/images/event.jpg")}
+              style={styles.img}
+              source={require("./../../assets/images/event.jpg")}
             >
-                <Text style={styles.title}>{selectedEvent?.eventName}</Text>
+              <Text style={styles.title}>{selectedEvent?.eventName}</Text>
             </ImageBackground>
-            {!hideStuff && <View style={styles.info_box}>
+            {!hideStuff && (
+              <View style={styles.info_box}>
                 <Text style={styles.info_text}>Event Info</Text>
                 <View style={styles.input_wrapper}>
                   <Text style={styles.input_text}>
-                      {selectedEvent?.eventName}
+                    {selectedEvent?.eventName}
                   </Text>
                 </View>
 
                 <View style={styles.input_wrapper}>
                   <Text style={styles.input_text}>
-                      {selectedEvent?.eventPlace}
+                    {selectedEvent?.eventPlace}
                   </Text>
                 </View>
 
-                <View style={styles.input_wrapper_2}>  
+                <View style={styles.input_wrapper_2}>
                   <View style={styles.input_wrapper_2_child}>
                     <Text style={[styles.input_text, { textAlign: "center" }]}>
-                        {moment(selectedEvent?.date).format("YYYY-MM-DD")}
+                      {moment(selectedEvent?.date).format("YYYY-MM-DD")}
                     </Text>
                   </View>
 
                   <View style={styles.input_wrapper_2_child}>
                     <Text style={[styles.input_text, { textAlign: "center" }]}>
-                        {moment(selectedEvent?.time).format('h:mm a').toUpperCase()}
+                      {moment(selectedEvent?.time)
+                        .format("h:mm a")
+                        .toUpperCase()}
                     </Text>
                   </View>
                 </View>
-            </View>}
-
-            {!hideStuff && <View style={styles.info_box_2}>
-              <View style={styles.info_box_header}>
-                <Image
-                  style={[styles.invitation_img, { width: 26, height: 26 }]}
-                  source={require('../../assets/images/celebration.jpg')}
-                />
-                <Text style={[styles.info_text, { marginBottom: 0 }]}>{guestList?.length > 0 ? `Guest List (${guestList.length})` : "Invite Others"}</Text>
               </View>
-              {guestLoading ? (
+            )}
+
+            {!hideStuff && (
+              <View style={styles.info_box_2}>
+                <View style={styles.info_box_header}>
+                  <Image
+                    style={[styles.invitation_img, { width: 26, height: 26 }]}
+                    source={require("../../assets/images/celebration.jpg")}
+                  />
+                  <Text style={[styles.info_text, { marginBottom: 0 }]}>
+                    {guestList?.length > 0
+                      ? `Guest List (${guestList.length})`
+                      : "Invite Others"}
+                  </Text>
+                </View>
+                {guestLoading ? (
                   <ActivityIndicator
                     size="small"
                     color={Colors.PRIMARY}
@@ -359,65 +385,74 @@ export default function eventDetail () {
                     data={guestList}
                     keyExtractor={(item, index) => index.toString()}
                     ItemSeparatorComponent={renderSeparator}
-                    renderItem={({item}) => (
-                      <GuestItem
-                        item={item}
-                      />
-                    )}
+                    renderItem={({ item }) => <GuestItem item={item} />}
                     ListEmptyComponent={() => (
                       <View>
-                        <Text style={styles.invitation_text}>Want to invite friends or relatives to the event?</Text>
+                        <Text style={styles.invitation_text}>
+                          Want to invite friends or relatives to the event?
+                        </Text>
                         <Image
                           style={styles.invitation_img}
-                          source={require('../../assets/images/celebration.jpg')}
+                          source={require("../../assets/images/celebration.jpg")}
                         />
                       </View>
                     )}
                   />
                 )}
 
-              {currentRole === "parent" && <TouchableOpacity style={styles.btn} onPress={async () => { 
-                setShowGuestList(true);
-                await getContactList();
-              }}>
-                <Text style={styles.btn_text}>Invite</Text>
-              </TouchableOpacity>}
-            </View>}
-            
+                {currentRole === "parent" && (
+                  <TouchableOpacity
+                    style={styles.btn}
+                    onPress={async () => {
+                      setShowGuestList(true);
+                      await getContactList();
+                    }}
+                  >
+                    <Text style={styles.btn_text}>Invite</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+
             {guestList?.length > 0 ? (
-              <View style={[styles.info_box_2, { marginTop: hideStuff ? -90 : 10 }]}>
-                  <View style={styles.info_box_header}>
-                    <Image
-                      style={[styles.invitation_img, { width: 26, height: 26 }]}
-                      source={require('../../assets/images/comments.jpg')}
-                    />
-                    <Text style={[styles.info_text, { marginBottom: 0 }]}>Message</Text>
-                  </View>
-                    <TextInput
-                      ref={messageRef}
-                      placeholder="Message for SMS..."
-                      style={styles.sms_message_input}
-                      multiline={true}
-                      numberOfLines={4}
-                      editable={!smsLoading}
-                      onChangeText={(val) => setMessage(val)}
-                      value={message}
-                      onFocus={() => setHideStuff(true)}
-                    />
+              <View
+                style={[styles.info_box_2, { marginTop: hideStuff ? -90 : 10 }]}
+              >
+                <View style={styles.info_box_header}>
+                  <Image
+                    style={[styles.invitation_img, { width: 26, height: 26 }]}
+                    source={require("../../assets/images/comments.jpg")}
+                  />
+                  <Text style={[styles.info_text, { marginBottom: 0 }]}>
+                    Message
+                  </Text>
+                </View>
+                <TextInput
+                  ref={messageRef}
+                  placeholder="Message for SMS..."
+                  style={styles.sms_message_input}
+                  multiline={true}
+                  numberOfLines={4}
+                  editable={!smsLoading}
+                  onChangeText={(val) => setMessage(val)}
+                  value={message}
+                  onFocus={() => setHideStuff(true)}
+                />
 
-                    {(currentRole === "parent") && <TouchableOpacity 
-                      style={styles.btn} 
-                      onPress={handleSendMessage}
-                    >
-                      <Text 
-                        style={styles.btn_text}>{smsLoading ? "Sending..." : "Send Message"}</Text>
-                    </TouchableOpacity>}
-              </View>) : null}
+                {currentRole === "parent" && (
+                  <TouchableOpacity
+                    style={styles.btn}
+                    onPress={handleSendMessage}
+                  >
+                    <Text style={styles.btn_text}>
+                      {smsLoading ? "Sending..." : "Send Message"}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            ) : null}
 
-            <Modal
-              visible={showGuestList}
-              transparent={true}
-            >
+            <Modal visible={showGuestList} transparent={true}>
               <View style={styles.modalOverlay}>
                 <View style={styles.bottomModal}>
                   <Text style={styles.info_text}>Add Guest</Text>
@@ -430,34 +465,36 @@ export default function eventDetail () {
                     />
                   ) : (
                     <FlatList
-                      data={contactList.filter(x => !checkIfInvitationExists(x))}
+                      data={contactList.filter(
+                        (x) => !checkIfInvitationExists(x)
+                      )}
                       keyExtractor={(item, index) => index.toString()}
                       ItemSeparatorComponent={renderSeparator}
-                      renderItem={({ item }) => (
-                        <ContactItem
-                          item={item}
-                        />
-                      )}
+                      renderItem={({ item }) => <ContactItem item={item} />}
                       ListEmptyComponent={() => (
                         <View style={styles.no_contact_text_wrapper}>
-                          <Text style={styles.no_contact_text}>No contacts available</Text>
+                          <Text style={styles.no_contact_text}>
+                            No contacts available
+                          </Text>
                         </View>
                       )}
                     />
                   )}
 
-                  <TouchableOpacity style={styles.btn} onPress={() => setShowGuestList(false)}>
+                  <TouchableOpacity
+                    style={styles.btn}
+                    onPress={() => setShowGuestList(false)}
+                  >
                     <Text style={styles.btn_text}>Done</Text>
                   </TouchableOpacity>
                 </View>
               </View>
             </Modal>
           </>
-          )}
-        </TouchableOpacity>
-      </SafeAreaView>
-  )
-
+        )}
+      </TouchableOpacity>
+    </SafeAreaView>
+  );
 }
 
 const { height } = Dimensions.get("window");
@@ -478,7 +515,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: Colors.WHITE,
     textAlign: "center",
-    marginTop: StatusBar.length - 80
+    marginTop: StatusBar.length - 80,
   },
   info_box: {
     backgroundColor: Colors.WHITE,
@@ -504,7 +541,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    maxHeight: "32%"
+    maxHeight: "32%",
   },
   info_box_header: {
     flexDirection: "row",
@@ -538,12 +575,12 @@ const styles = StyleSheet.create({
     borderColor: Colors.BORDER_GREY,
     borderRadius: 10,
     padding: 10,
-    width: '48.5%'
+    width: "48.5%",
   },
   input_text: {
     fontFamily: "outfit-regular",
     fontSize: 14,
-    color: Colors.GREY
+    color: Colors.GREY,
   },
   input: {
     marginTop: 10,
@@ -618,7 +655,7 @@ const styles = StyleSheet.create({
   invitation_img: {
     width: 44,
     height: 44,
-    alignSelf: "center"
+    alignSelf: "center",
   },
   contact_wrapper: {
     flexDirection: "row",
@@ -649,14 +686,14 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: "#ddd",
   },
-  no_contact_text: { 
-    fontFamily: "outfit-light", 
-    fontSize: 18, 
-    color: Colors.GREY 
+  no_contact_text: {
+    fontFamily: "outfit-light",
+    fontSize: 18,
+    color: Colors.GREY,
   },
-  no_contact_text_wrapper: { 
-    padding: 30, 
-    alignItems: "center" 
+  no_contact_text_wrapper: {
+    padding: 30,
+    alignItems: "center",
   },
   sms_message_input: {
     borderWidth: 1,
@@ -664,5 +701,5 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     height: 80,
-  }
+  },
 });
