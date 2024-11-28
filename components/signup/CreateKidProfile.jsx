@@ -31,6 +31,9 @@ import { SignUpContext } from "../../contexts/SignUpContext.jsx";
 import Entypo from "@expo/vector-icons/Entypo";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
+// helper
+import { stringToHex } from "../../config/helper.js";
+
 export default function CreateKidProfile({ onSignUp }) {
   const [count, setCount] = useState(1);
   const { signUpData, setSignUpData } = useContext(SignUpContext);
@@ -181,6 +184,7 @@ export default function CreateKidProfile({ onSignUp }) {
         // Set the document in Firestore
         await setDoc(doc(db, "Families", signUpData.email), {
           email: user.email,
+          passcode: stringToHex(signUpData.passcode),
           parents: signUpData.parents,
           kids: signUpData.kids,
         });

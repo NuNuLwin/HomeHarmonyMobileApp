@@ -207,5 +207,6 @@ const styles = StyleSheet.create({
     color: Colors.GREY,
     fontFamily: "outfit-regular",
     justifyContent: "center",
+    textAlign: "center",
   },
 });

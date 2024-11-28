@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -19,6 +19,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // context
 import { useUserProvider } from "../../contexts/UserContext";
+import { UserContext } from "../../contexts/UserContext";
 
 // components
 import AddButton from "../../components/reward/AddButton";
@@ -33,6 +34,7 @@ import Keys from "../../constants/Keys";
 export default function RewardScreen() {
   const navigation = useNavigation();
   const userData = useUserProvider();
+  const { setUserData } = useContext(UserContext);
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,6 +49,17 @@ export default function RewardScreen() {
 
     const current_role = await AsyncStorage.getItem(Keys.CURRENT_ROLE);
     setCurrentRole(current_role);
+
+    const familyQuery = query(
+      collection(db, "Families"),
+      where("email", "==", userData?.email)
+    );
+
+    const querySnapshot = await getDocs(familyQuery);
+
+    querySnapshot.forEach((doc) => {
+        setUserData(doc.data());
+    });
 
     setIsLoading(false);
   };

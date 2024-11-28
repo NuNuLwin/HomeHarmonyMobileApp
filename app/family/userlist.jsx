@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { 
   Alert,
+  Modal,
   StyleSheet, 
   SafeAreaView,
   Text, 
@@ -17,16 +19,26 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import FamilyMember from "../../components/family/FamilyMember";
 import HeaderLogo from "../../components/common/headerLogo";
 
+// pin code
+import { PinCode, PinCodeT } from '@anhnch/react-native-pincode';
+
 // constants
 import Keys from "@/constants/Keys";
+
+// helper
+import { hexToString } from "../../config/helper";
 
 export default function Userlist() {
   const router = useRouter();
   const UserData = useUserProvider();
 
+  const [pin, setPin] = useState();
+  const [pinMode, setPinMode] = useState(PinCodeT.Modes.Enter);
+  const [showPinModal, setShowPinModal] = useState(false);
+
   // console.log('=== UserList ===', UserData);
 
-  const selectProfile = (profile) => {
+  const selectProfile = (profile, is_parent) => {
     Alert.alert('Confirm', `Are you sure you want to use the profile "${profile.name}"?`, [
       {
         text: 'Cancel',
@@ -46,6 +58,10 @@ export default function Userlist() {
           // const current_role = await AsyncStorage.getItem(Keys.CURRENT_ROLE);
 
           // console.log(`current_user: ${current_user}, current_role: ${current_role}`);
+          if (is_parent) {
+            setShowPinModal(true);
+            return; 
+          }
           router.replace("/chore");
         } catch (e) {
           console.log('Error setting current user & role to async storage:', e);
@@ -53,9 +69,45 @@ export default function Userlist() {
       }},
     ]);
   };
+
+  useEffect(() => {
+    if (UserData?.passcode) { 
+      setPin(hexToString(UserData.passcode));
+    }
+  }, [UserData])
+
   return (
     <SafeAreaView>
       <View style={styles.container}>
+        <Modal
+          visible={showPinModal}
+          transparent={true}
+        >
+          <PinCode 
+            pin={pin} 
+            mode={pinMode} 
+            visible={showPinModal}
+            options={{
+              allowReset: false,
+              disableLock: true,
+              maxAttempt: 3,
+              lockDuration: 0
+            }}
+            styles={{ 
+              main: { ...StyleSheet.absoluteFillObject, zIndex: 99 }
+            }}
+            onSet={newPin => {
+              setPin(newPin);
+              setShowPinModal(false);
+            }}
+            onSetCancel={() => setPinVisible(false)}
+            onEnter={async () => {
+              setShowPinModal(false);
+              router.replace("/chore");
+            }}  
+          />
+        </Modal>
+
         <HeaderLogo />
         <Text style={styles.title}>Who are you?</Text>
         <View style={styles.body_wrapper}>
@@ -63,7 +115,7 @@ export default function Userlist() {
             <FamilyMember
               key={index}
               member={{ ...parent, role: "parent" }}
-              onSelect={selectProfile}
+              onSelect={(member) => selectProfile(member, true)}
               showPoint={false}
             />
           ))}
@@ -73,7 +125,7 @@ export default function Userlist() {
             <FamilyMember
               key={index}
               member={{ ...kid, role: "kid" }}
-              onSelect={selectProfile}
+              onSelect={(member) => selectProfile(member, false)}
             />
           ))}
         </View>

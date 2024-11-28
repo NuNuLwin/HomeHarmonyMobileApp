@@ -1,11 +1,18 @@
+import React, { useContext, useEffect, useState } from "react";
 import { View, Text, TextInput, StyleSheet } from "react-native";
-import React, { useContext, useEffect } from "react";
-import { useState } from "react";
+
+// components
 import { SignUpContext } from "../../contexts/SignUpContext.jsx";
+
+// icons
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function CreateAccount() {
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
+  const [showPassword, setShowPassword] = useState(false);
+  const [passcode, setPasscode] = useState();
+  const [showPasscode, setShowPasscode] = useState(false);
 
   const { signUpData, setSignUpData } = useContext(SignUpContext);
 
@@ -17,6 +24,9 @@ export default function CreateAccount() {
     if (signUpData?.password) {
       setPassword(signUpData.password);
     }
+    if (signUpData?.passcode) {
+      setPasscode(signUpData.passcode);
+    }
   }, [signUpData]);
 
   // Update to context
@@ -25,8 +35,9 @@ export default function CreateAccount() {
       ...prevData,
       email: email,
       password: password,
+      passcode: passcode,
     }));
-  }, [email, password]);
+  }, [email, password, passcode]);
 
   return (
     <View>
@@ -35,25 +46,59 @@ export default function CreateAccount() {
       {/* Email */}
       <View style={styles.input_wrapper}>
         <Text style={styles.text}>Email</Text>
-        <TextInput
-          style={styles.input}
-          value={email}
-          placeholder="Enter Email"
-          onChangeText={(val) => setEmail(val)}
-          autoCapitalize={'none'}
-        ></TextInput>
+        <View style={styles.textbox_wrapper}>
+          <TextInput
+            style={styles.input}
+            value={email}
+            placeholder="Enter Email"
+            onChangeText={(val) => setEmail(val)}
+            autoCapitalize={'none'}
+          ></TextInput>
+        </View>
       </View>
 
       {/* Password */}
       <View style={styles.input_wrapper}>
         <Text style={styles.text}>Password</Text>
-        <TextInput
-          secureTextEntry={true}
-          value={password}
-          style={styles.input}
-          placeholder="Enter Password"
-          onChangeText={(val) => setPassword(val)}
-        ></TextInput>
+        <View style={styles.textbox_wrapper}>
+          <TextInput
+            secureTextEntry={!showPassword}
+            value={password}
+            style={styles.input}
+            placeholder="Enter Password"
+            onChangeText={(val) => setPassword(val)}
+            textContentType="oneTimeCode"
+          ></TextInput>
+          <MaterialCommunityIcons
+            name={showPassword ? "eye-off" : "eye"}
+            size={24}
+            color={"#aaa"}
+            onPress={() => setShowPassword(!showPassword)}
+          />
+        </View>
+      </View>
+
+      {/* Passcode */}
+      <View style={styles.input_wrapper}>
+        <Text style={styles.text}>Passcode</Text>
+        <View style={styles.textbox_wrapper}>
+          <TextInput
+            secureTextEntry={!showPasscode}
+            value={passcode}
+            style={styles.input}
+            placeholder="Enter Passcode"
+            onChangeText={(val) => setPasscode(val.replace(/[^0-9]/g, ''))}
+            textContentType="oneTimeCode"
+            maxLength={4}
+            keyboardType="numeric"
+          ></TextInput>
+          <MaterialCommunityIcons
+            name={showPasscode ? "eye-off" : "eye"}
+            size={24}
+            color={"#aaa"}
+            onPress={() => setShowPasscode(!showPasscode)}
+          />
+        </View>
       </View>
     </View>
   );
@@ -74,11 +119,20 @@ const styles = StyleSheet.create({
     fontFamily: "outfit-regular",
     fontSize: 18,
   },
-
-  input: {
+  textbox_wrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: '#D9D9D9',
+    borderRadius: 30,
+    paddingHorizontal: 14,
     marginTop: 10,
-    padding: 20,
+  },
+  input: {
     backgroundColor: "#D9D9D9",
     borderRadius: 30,
+    flex: 1,
+    paddingVertical: 20,
+    paddingRight: 10,
   },
 });

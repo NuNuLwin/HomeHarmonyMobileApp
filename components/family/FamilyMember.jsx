@@ -8,7 +8,6 @@ export default function FamilyMember({
   showPoint,
   isSelected,
 }) {
-  // console.log("=== FamilyMember ===", isSelected);
 
   return (
     <TouchableOpacity style={styles.img_box} onPress={() => onSelect(member)}>
@@ -21,9 +20,9 @@ export default function FamilyMember({
           }
         />
       </View>
-      {showPoint && member.point !== null && member.point !== undefined ? (
+      {showPoint && member.points !== null && member.points !== undefined ? (
         <View style={styles.point_box}>
-          <Text style={styles.point_text}>{member.point}</Text>
+          <Text style={styles.point_text}>{member.points}</Text>
         </View>
       ) : null}
       <Text style={styles.text}>{member.name}</Text>

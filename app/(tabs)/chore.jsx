@@ -6,7 +6,15 @@ import {
   Text,
   View,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import { useIsFocused } from "@react-navigation/native";
+
+// context
+import { UserContext } from "../../contexts/UserContext";
+
+// firestore
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../../config/FirebaseConfig";
 
 // router
 import { useRouter } from "expo-router";
@@ -31,6 +39,8 @@ export default function chore() {
   const [currentUser, setCurrentUser] = useState(null);
   const [currentRole, setCurrentRole] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { userData, setUserData } = useContext(UserContext);
+  const isFocused = useIsFocused();
 
   const GetCurrentUser = async () => {
     try {
@@ -39,12 +49,28 @@ export default function chore() {
 
       const current_role = await AsyncStorage.getItem(Keys.CURRENT_ROLE);
       setCurrentRole(current_role);
+
+      const familyQuery = query(
+        collection(db, "Families"),
+        where("email", "==", userData?.email)
+      );
+  
+      const querySnapshot = await getDocs(familyQuery);
+  
+      querySnapshot.forEach((doc) => {
+          setUserData(doc.data());
+      });
+
     } catch (error) {
       console.error("Error getting async storage update:", error);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    GetCurrentUser();
+  }, [isFocused]);
 
   useEffect(() => {
     GetCurrentUser();

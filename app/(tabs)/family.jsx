@@ -109,6 +109,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     flexWrap: "wrap",
+    width: '100%'
   },
   loader: {
     marginTop: 20,

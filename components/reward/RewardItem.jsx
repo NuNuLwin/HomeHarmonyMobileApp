@@ -63,7 +63,7 @@ export default function RewardItem({
 
         if (kidIndex !== -1) {
           const updatedKids = [...familyData.kids];
-          updatedKids[kidIndex].point -= reward.point;
+          updatedKids[kidIndex].points -= reward.point;
 
           // Update kids points in family document
           await updateDoc(familyDoc.ref, { kids: updatedKids });
@@ -182,8 +182,12 @@ export default function RewardItem({
           </View>
 
           {loading ? (
-            <ActivityIndicator size="medium" color={Colors.PINK} />
-          ) : kidInUserData && kidInUserData.point >= reward.point ? (
+            <ActivityIndicator 
+              size="medium" 
+              color={Colors.PINK} 
+              style={{ marginRight: 30 }}
+            />
+          ) : kidInUserData && kidInUserData.points >= reward.point ? (
             <TouchableOpacity style={styles.btn} onPress={handleRedeem}>
               <Text style={styles.btn_text}>Redeem</Text>
             </TouchableOpacity>

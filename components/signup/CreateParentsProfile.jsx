@@ -347,6 +347,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     width: "40%",
     alignItems: "center",
+    marginTop: 10,
   },
   selectedButton: {
     backgroundColor: Colors.PRIMARY,

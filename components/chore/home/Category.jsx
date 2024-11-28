@@ -102,7 +102,7 @@ export default function Category({ category, currentRole }) {
               { backgroundColor: Colors.CHORE_COLORS.ASSIGN },
             ]}
             onPress={() => {
-              setSelectedCategory("Assign");
+              setSelectedCategory(Keys.PENDING);
               handlePendingClick();
             }}
           >

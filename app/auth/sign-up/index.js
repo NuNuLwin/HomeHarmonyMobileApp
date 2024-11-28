@@ -32,8 +32,9 @@ export default function SignUp() {
     if (step === 0) {
       const _email = signUpData?.email;
       const _password = signUpData?.password;
+      const _passcode = signUpData?.passcode;
 
-      if (!_email || !_password) {
+      if (!_email || !_password || !_passcode) {
         flag = false;
       }
     }

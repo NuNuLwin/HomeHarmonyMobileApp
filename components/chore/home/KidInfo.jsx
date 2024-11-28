@@ -1,5 +1,6 @@
 import { View, Text, Image, StyleSheet, Dimensions } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
+import { useIsFocused } from "@react-navigation/native";
 
 // firebase
 import {
@@ -25,40 +26,47 @@ const windowHeight = Dimensions.get("window").height;
 export default function KidInfo({ kid, index, currentUser, family }) {
   const [chores, setChores] = useState([]);
   const [kidPoint, setKidPoint] = useState(null);
+  const isFocused = useIsFocused();
+
+  const fetchKidPoint = async () => {
+    try {
+      const familyQuery = query(
+        collection(db, "Families"),
+        where("email", "==", family) // Adjust this to match your filter criteria
+      );
+
+      const querySnapshot = await getDocs(familyQuery);
+
+      if (!querySnapshot.empty) {
+        querySnapshot.forEach((doc) => {
+          const familyData = doc.data();
+          const kidsArray = familyData.kids;
+
+          const findkid = kidsArray.find(
+            (findkid) => findkid.name === kid.name
+          );
+
+          if (findkid) {
+            setKidPoint(findkid.points); // Update the state with the kid's points
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching kid info:", error);
+    }
+  };
 
   useEffect(() => {
     if (!family || !kid.name) return; // Ensure family and kid name are provided
 
-    const fetchKidPoint = async () => {
-      try {
-        const familyQuery = query(
-          collection(db, "Families"),
-          where("email", "==", family) // Adjust this to match your filter criteria
-        );
+    fetchKidPoint();
+  }, []);
 
-        const querySnapshot = await getDocs(familyQuery);
-
-        if (!querySnapshot.empty) {
-          querySnapshot.forEach((doc) => {
-            const familyData = doc.data();
-            const kidsArray = familyData.kids;
-
-            const findkid = kidsArray.find(
-              (findkid) => findkid.name === kid.name
-            );
-
-            if (findkid) {
-              setKidPoint(findkid.points); // Update the state with the kid's points
-            }
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching kid info:", error);
-      }
-    };
+  useEffect(() => {
+    if (!family || !kid.name) return; // Ensure family and kid name are provided
 
     fetchKidPoint();
-  }, [family, kid.name]);
+  }, [family, kid.name, isFocused]);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -83,6 +91,7 @@ export default function KidInfo({ kid, index, currentUser, family }) {
             ...prevArray,
             { id: change.doc.id, ...change.doc.data() },
           ]);
+          fetchKidPoint();
         } else if (change.type === "modified") {
           setChores((prevArray) => {
             const index = prevArray.findIndex(
@@ -95,10 +104,12 @@ export default function KidInfo({ kid, index, currentUser, family }) {
             }
             return prevArray;
           });
+          fetchKidPoint();
         } else if (change.type === "removed") {
           setChores((prevArray) =>
             prevArray.filter((item) => item.id !== change.doc.id)
           );
+          fetchKidPoint();
         }
       });
     });

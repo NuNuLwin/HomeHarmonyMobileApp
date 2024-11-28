@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Alert,
   Animated,
   Image,
   StyleSheet,
@@ -12,7 +13,7 @@ import {
 import { useRouter } from "expo-router";
 
 // firebase
-import { doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { doc, updateDoc, deleteDoc, getDoc } from "firebase/firestore";
 import { db } from "../../../config/FirebaseConfig";
 
 // swipeable
@@ -35,10 +36,55 @@ export default function AssignChoreListItem({
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  const updateKidPoints = async () => {
+    const familyDocRef = doc(db, "Families", assigned_chore.family);
+        const familyDoc = await getDoc(familyDocRef);
+
+        if (familyDoc.exists()) {
+          const familyData = familyDoc.data();
+          const kidsArray = familyData.kids;
+          const kidName = assigned_chore.kidName;
+
+          const kidIndex = kidsArray.findIndex((kid) => kid.name === kidName);
+
+          if (kidIndex !== -1) {
+            console.log("Kid found in the family. Updating points...");
+
+            const kidData = kidsArray[kidIndex];
+            const currentPoints = kidData.points || 0;
+            const newPoints = currentPoints + assigned_chore.chore.point;
+
+            // Update the kid's points in the family's document
+            kidsArray[kidIndex].points = newPoints;
+
+            await updateDoc(familyDocRef, {
+              kids: kidsArray,
+            });
+
+            Alert.alert(
+              "Completed",
+              "Assigned chore has been marked as completed!",
+              [
+                {
+                  text: "OK",
+                  onPress: () => {},
+                },
+              ]
+            );
+          } else {
+            console.log("Kid not found in the kids array.");
+          }
+        } else {
+          console.log("Family document not found.");
+        }
+  }
+
   const handleChoreUpdate = async (to_delete, to_reject) => {
     setLoading(true);
 
     console.log("=== handleChoreUpdate ===", assigned_chore.id);
+
+    let shouldUpdateKidPoints = false;
 
     if (to_delete) {
       try {
@@ -56,10 +102,12 @@ export default function AssignChoreListItem({
       }
       else if (status === Keys.PENDING && currentRole === "parent") {
         new_status = Keys.COMPLETED;
+        shouldUpdateKidPoints = true;
       } else if (status === Keys.PENDING && currentRole === "kid") {
         new_status = Keys.IN_PROGRESS;
       } else if (status === Keys.IN_PROGRESS && currentRole === "parent") {
         new_status = Keys.COMPLETED;
+        shouldUpdateKidPoints = true;
       }
 
       console.log("=== new status ===", new_status, assigned_chore.id);
@@ -67,6 +115,9 @@ export default function AssignChoreListItem({
       if (!new_status) return;
 
       try {
+        if (shouldUpdateKidPoints) {
+          await updateKidPoints();
+        }
         await updateDoc(doc(db, "AssignChores", assigned_chore.id), { status: new_status });
         handleRemoveItem(assigned_chore.id);
       } catch (error) {
