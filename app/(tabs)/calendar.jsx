@@ -90,6 +90,9 @@ export default function calendar() {
           tmpItems[event_date] = [tmp];
         }
 
+        const guestCount = Array.isArray(tmp.guests) ? tmp.guests.length : 0;
+        tmp.guestCount = guestCount; // Add the guest count to the event object
+
         return tmp;
       });
       setItems(tmpItems);
@@ -149,7 +152,7 @@ export default function calendar() {
         </View>
         <View style={styles.itemDetails}>
           <Ionicons name="person" size={19} color="black" />
-          <Text>{item?.occupancy || 0} guests</Text>
+          <Text>{item?.guestCount || 0} guests</Text>
         </View>
         {currentRole === "parent" && (
           <TouchableOpacity

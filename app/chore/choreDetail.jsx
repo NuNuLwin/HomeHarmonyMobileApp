@@ -434,6 +434,9 @@ export default function choreDetail() {
                 {selectedChore?.chore?.image ? "Recommended" : "Custom"}
               </Text>
             </View>
+            <View style={[styles.detail_box, { backgroundColor: "#BDD8BD" }]}>
+              <Text style={styles.text}>{selectedChore.status}</Text>
+            </View>
           </View>
 
           {images.length > 2 || selectedChore.status === Keys.COMPLETED ? (
