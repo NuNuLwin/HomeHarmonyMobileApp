@@ -91,6 +91,7 @@ export default function calendar() {
         }
 
         const guestCount = Array.isArray(tmp.guests) ? tmp.guests.length : 0;
+
         tmp.guestCount = guestCount; // Add the guest count to the event object
 
         return tmp;
@@ -267,8 +268,8 @@ const styles = StyleSheet.create({
   },
   btnWrapper: {
     position: "absolute",
-    bottom: 20, // Adjust for desired vertical spacing
-    right: 20, // Adjust for desired horizontal spacing
+    bottom: 20,
+    right: 20,
   },
 
   btn: {

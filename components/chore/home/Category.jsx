@@ -19,8 +19,6 @@ export default function Category({ category, currentRole }) {
     router.push({ pathname: "/chore/assignChore" });
   };
 
-  console.log("========selectedCategory=======", selectedCategory);
-
   return (
     <View style={styles.container}>
       {/* Circle 1: Pending */}

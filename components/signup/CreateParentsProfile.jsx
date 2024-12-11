@@ -92,7 +92,6 @@ export default function CreateParentsProfile(props) {
   useEffect(() => {
     if (props.step === "3") {
       const parent1Gender = signUpData.parents?.[0]?.gender;
-      console.log("parent1Gender..", parent1Gender);
 
       // Auto-select the opposite gender
       if (parent1Gender === "Female") {
@@ -238,7 +237,14 @@ export default function CreateParentsProfile(props) {
             ]}
             onPress={() => setGender("Male")}
           >
-            <Text style={styles.genderText}>Male</Text>
+            <Text
+              style={[
+                styles.genderText,
+                gender === "Male" && { color: Colors.WHITE },
+              ]}
+            >
+              Male
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -248,7 +254,14 @@ export default function CreateParentsProfile(props) {
             ]}
             onPress={() => setGender("Female")}
           >
-            <Text style={styles.genderText}>Female</Text>
+            <Text
+              style={[
+                styles.genderText,
+                gender === "Female" && { color: Colors.WHITE },
+              ]}
+            >
+              Female
+            </Text>
           </TouchableOpacity>
         </View>
       </View>

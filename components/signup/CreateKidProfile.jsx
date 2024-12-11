@@ -416,4 +416,7 @@ const styles = StyleSheet.create({
   input_wrapper: {
     marginTop: 5,
   },
+  text_style: {
+    color: Colors.WHITE,
+  },
 });

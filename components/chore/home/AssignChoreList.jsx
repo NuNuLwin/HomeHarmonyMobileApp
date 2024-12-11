@@ -39,11 +39,8 @@ export default function AssignChoreList({ currentUser, currentRole }) {
   const [loader, setLoader] = useState(false);
   const [assignedChoreList, setAssignedChoreList] = useState([]);
 
-  console.log("selectedType..", selectedType);
-
   useEffect(() => {
     if (userData && currentUser && currentRole) {
-      console.log("userData:", userData);
       GetAssignChoreList("Pending");
     }
   }, []);
