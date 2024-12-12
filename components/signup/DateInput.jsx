@@ -17,7 +17,6 @@ export default function DateInput(props) {
   );
 
   const onChange = (e, _date) => {
-    console.log("onChange ===", _date);
     setDate(_date);
   };
 

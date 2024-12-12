@@ -32,7 +32,7 @@ export default function KidInfo({ kid, index, currentUser, family }) {
     try {
       const familyQuery = query(
         collection(db, "Families"),
-        where("email", "==", family) // Adjust this to match your filter criteria
+        where("email", "==", family)
       );
 
       const querySnapshot = await getDocs(familyQuery);
@@ -57,13 +57,13 @@ export default function KidInfo({ kid, index, currentUser, family }) {
   };
 
   useEffect(() => {
-    if (!family || !kid.name) return; // Ensure family and kid name are provided
+    if (!family || !kid.name) return;
 
     fetchKidPoint();
   }, []);
 
   useEffect(() => {
-    if (!family || !kid.name) return; // Ensure family and kid name are provided
+    if (!family || !kid.name) return;
 
     fetchKidPoint();
   }, [family, kid.name, isFocused]);
@@ -147,8 +147,6 @@ export default function KidInfo({ kid, index, currentUser, family }) {
             <View style={styles.point_box}>
               <Text style={styles.point_text}>{kidPoint}</Text>
             </View>
-
-            {/* <Text style={styles.text}>{kid.name}</Text> */}
           </View>
 
           <View style={styles.status_wrapper}>

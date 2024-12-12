@@ -211,9 +211,7 @@ export default function CreateKidProfile({ onSignUp }) {
             [{ text: "OK" }]
           );
         }
-        // Alert.alert("Problem in your account set up!", errorMessage, [
-        //   { text: "OK" },
-        // ]);
+
         console.log(errorMessage, errorCode);
       }
     }

@@ -153,7 +153,6 @@ export default function RewardItem({
 
   return (
     <Swipeable
-      // renderLeftActions={LeftSwipeActions}
       renderRightActions={(e) => rightSwipeActions(e, reward)}
       leftThreshold={30}
       rightThreshold={40}
@@ -182,9 +181,9 @@ export default function RewardItem({
           </View>
 
           {loading ? (
-            <ActivityIndicator 
-              size="medium" 
-              color={Colors.PINK} 
+            <ActivityIndicator
+              size="medium"
+              color={Colors.PINK}
               style={{ marginRight: 30 }}
             />
           ) : kidInUserData && kidInUserData.points >= reward.point ? (

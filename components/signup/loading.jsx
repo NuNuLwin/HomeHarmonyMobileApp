@@ -5,7 +5,6 @@ import Colors from "../../constants/Colors";
 export default function loading() {
   return (
     <View style={styles.container}>
-      {/* <Text style={styles.title}>Please Wait...</Text> */}
       <Text style={styles.text}>Your family account is creating</Text>
       <ActivityIndicator size={"large"} color={Colors.PRIMARY} />
       <Text style={styles.text1}>Don't Go Back</Text>

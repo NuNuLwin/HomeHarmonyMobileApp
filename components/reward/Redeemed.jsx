@@ -29,21 +29,6 @@ export default function Redeemed({ selectedKid, currentUser, currentRole }) {
     }
   }, [selectedKid, userData, currentUser, currentRole]);
 
-  // useEffect(() => {
-  //   if (selectedKid) {
-  //     setRedeemed([]);
-  //     GetAllRedeemedByKid();
-  //   }
-  // }, [selectedKid]);
-
-  // useEffect(() => {
-  //   setRedeemed([]);
-  //   GetAllRedeemedByKid();
-  // }, []);
-
-  /**
-   * Used to Get all redeemed  from DB
-   */
   const GetAllRedeemedByKid = async () => {
     setRedeemed([]);
     setLoader(true);
