@@ -15,3 +15,4 @@ To run the project:
 4. To login with existing account:
    email: tester@gmail.com
    password: 1234567
+   Parents profile pin number: 1221
